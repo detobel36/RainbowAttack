@@ -31,6 +31,8 @@ FINAL
 
 ```
 
+--------------
+
 ```
 FICHIER_1
 aabcd
@@ -47,6 +49,8 @@ cuamd
 FINAL
 aabcd
 ```
+
+--------------
 
 ```
 FICHIER_1
@@ -66,6 +70,8 @@ FINAL
 aabcd
 abcdm
 ```
+
+--------------
 
 ```
 FICHIER_1
@@ -87,6 +93,7 @@ abcdm
 admbx
 ```
 
+--------------
 
 ```
 FICHIER_1
@@ -95,20 +102,21 @@ abcdm
 <-
 
 FICHIER_2
-bacdd   <-
-duxva
+bacdd
+duxva   <-
 
 FICHIER_3
 admbx
-cuamd
-<-
+cuamd   <-
 
 FINAL
 aabcd
 abcdm
 admbx
-cuamd
+bacdd
 ```
+
+--------------
 
 ```
 FICHIER_1
@@ -129,9 +137,11 @@ FINAL
 aabcd
 abcdm
 admbx
-cuamd
 bacdd
+cuamd
 ```
+
+--------------
 
 ```
 FICHIER_1
@@ -153,7 +163,7 @@ FINAL
 aabcd
 abcdm
 admbx
-cuamd
 bacdd
+cuamd
 duxva
 ```
