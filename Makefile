@@ -4,10 +4,10 @@ all:
 build: gen-passwd check-passwd
 
 gen-passwd:
-	g++ -o gen-passwd -std=c++17 random.hpp sha256.cpp gen-passwd.cpp passwd-utils.hpp
+	g++ -o gen-passwd -std=c++17 src/random.hpp src/sha256.cpp src/gen-passwd.cpp src/passwd-utils.hpp
 
 check-passwd:
-	g++ -o check-passwd -std=c++17 random.hpp sha256.cpp check-passwd.cpp passwd-utils.hpp
+	g++ -o check-passwd -std=c++17 src/random.hpp src/sha256.cpp src/check-passwd.cpp src/passwd-utils.hpp
 
 help:
 	@echo "Commands: make"

@@ -33,3 +33,6 @@
 
 gen-passwd
 check-passwd
+
+# Test folder
+test/*
