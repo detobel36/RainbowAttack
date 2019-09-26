@@ -26,6 +26,11 @@ test-check: check-passwd
 	@echo "Check the results"
 	./check-passwd test/generate_pass.txt test/results.txt 
 
+clean: clear
+
+clear:
+	rm rainbow-table check-passwd gen-passwd
+
 help:
 	@echo "Commands: make"
 	@echo "\tbuild\t\tBuild all code"
