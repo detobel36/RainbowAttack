@@ -2,12 +2,15 @@
 #include <cstring>
 #include <iostream>
 #include <fstream>
+#include "passwd-utils.hpp"
+
+const int PASS_SIZE = 6;
+const bool DEBUG = true;
 
 struct Rainbow_row
 {
-    // TODO adapt to have fix size
-    char pass_head[9];
-    char pass_tail[9];
+    char pass_head[PASS_SIZE+1];
+    char pass_tail[PASS_SIZE+1];
 };
 
 void read_table(std::string file_name) // display data from file:
@@ -18,33 +21,48 @@ void read_table(std::string file_name) // display data from file:
     if(table_file)
     {
 
-        Rainbow_row result_row[1];
-        table_file.read((char *) &result_row[0], sizeof(Rainbow_row));
-        std::cout << "Head: " << result_row[0].pass_head << std::endl;
-        std::cout << "Tail: " << result_row[0].pass_tail << std::endl;
+        Rainbow_row result_row;
+        while(table_file.read((char *) &result_row, sizeof(Rainbow_row)))
+        {
+            std::cout << "Head: " << result_row.pass_head << std::endl;
+            std::cout << "Tail: " << result_row.pass_tail << std::endl;
+        }
         
         table_file.close();
     }
 }
 
-void write_table(std::string file_name)
+void generate_table(std::string output_file)
 {
+    // Create file
+    std::ofstream table_file(output_file, std::ios::out | std::ios::binary);
 
-    std::ofstream table_file(file_name, std::ios::out | std::ios::binary);
-
-    std::cout << "coucou write" << std::endl;
-
-    Rainbow_row new_row[1];
-    std::strncpy(new_row[0].pass_head, "12345678", sizeof(new_row[0].pass_head)-1);
-    new_row[0].pass_head[8] = '\0';
-    std::strncpy(new_row[0].pass_tail, "01234567", sizeof(new_row[0].pass_tail)-1);
-    new_row[0].pass_tail[8] = '\0';
-
-    if(table_file)
+    int i = 0;
+    while(i < 3)
     {
-        std::cout << "Save: " << &new_row[0] << std::endl;
-        table_file.write((char *) &new_row[0], sizeof(Rainbow_row));
-        // table_file << "test" << std::endl;
+        // Generate password
+        std::string generate_password = rainbow::generate_passwd(PASS_SIZE);
+        if(DEBUG)
+        {
+            std::cout << "Genrated password: " << generate_password << std::endl;
+        }
+
+        // Create structure
+        Rainbow_row new_row;
+        std::strncpy(new_row.pass_head, generate_password.c_str(), sizeof(new_row.pass_head)-1);
+        new_row.pass_head[PASS_SIZE] = '\0';
+
+        // TODO hash - reduce - hash ...
+
+        std::strncpy(new_row.pass_tail, generate_password.c_str(), sizeof(new_row.pass_tail)-1);
+        new_row.pass_tail[PASS_SIZE] = '\0';
+
+        if(table_file)
+        {
+            table_file.write((char *) &new_row, sizeof(Rainbow_row));
+        }
+
+        ++i;
     }
 
     table_file.close();
@@ -54,6 +72,7 @@ void write_table(std::string file_name)
 int main(int argc, char *argv[])
 {
     std::string file_name = "Employe.txt";
-    write_table(file_name);
+
+    generate_table(file_name);
     read_table(file_name);
 }

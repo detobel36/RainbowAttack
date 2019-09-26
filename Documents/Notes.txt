@@ -1,3 +1,0 @@
-
-- Fichier à accès aléatoire
-- Recherche en triant les tail et en faisant une recherche dicotomique

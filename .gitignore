@@ -31,8 +31,10 @@
 *.out
 *.app
 
+# Custom executables
 gen-passwd
 check-passwd
+rainbow-table
 
 # Test folder
 test/*

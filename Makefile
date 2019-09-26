@@ -13,7 +13,7 @@ check-passwd:
 	g++ -o check-passwd -std=c++17 src/random.hpp src/sha256.cpp src/check-passwd.cpp src/passwd-utils.hpp
 
 rainbow-table:
-	g++ -o rainbow-table -std=c++17 src/rainbow-table.cpp
+	g++ -o rainbow-table -std=c++17 src/random.hpp src/sha256.cpp src/rainbow-table.cpp src/passwd-utils.hpp
 
 test-pass: gen-passwd
 	@echo "Generate password and hash"
