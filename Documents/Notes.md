@@ -15,155 +15,98 @@ Dans un second temps, on va ouvrir tous les fichiers (si 1Go par fichier, max 12
 Exemple concrêt avec 3 fichiers:
 
 ```
-FICHIER_1
-aabcd   <-
-abcdm
+FICHIER_1       FICHIER_2       FICHIER_3
+aabcd   <-      bacdd   <-      admbx   <-
+abcdm           duxva           cuamd
 
-FICHIER_2
-bacdd   <-
-duxva
 
-FICHIER_3
-admbx   <-
-cuamd
-
-FINAL
+                FINAL
 
 ```
 
 --------------
 
 ```
-FICHIER_1
-aabcd
-abcdm   <-
+FICHIER_1       FICHIER_2       FICHIER_3
+aabcd           bacdd   <-      admbx   <-
+abcdm   <-      duxva           cuamd
 
-FICHIER_2
-bacdd   <-
-duxva
 
-FICHIER_3
-admbx   <-
-cuamd
-
-FINAL
-aabcd
+                FINAL
+                aabcd
 ```
 
 --------------
 
 ```
-FICHIER_1
-aabcd
-abcdm
+FICHIER_1       FICHIER_2       FICHIER_3
+aabcd           bacdd   <-      admbx   <-
+abcdm           duxva           cuamd
 <-
 
-FICHIER_2
-bacdd   <-
-duxva
-
-FICHIER_3
-admbx   <-
-cuamd
-
-FINAL
-aabcd
-abcdm
+                FINAL
+                aabcd
+                abcdm
 ```
 
 --------------
 
 ```
-FICHIER_1
-aabcd
-abcdm
+FICHIER_1       FICHIER_2       FICHIER_3
+aabcd           bacdd   <-      admbx
+abcdm           duxva           cuamd   <-
 <-
 
-FICHIER_2
-bacdd   <-
-duxva
-
-FICHIER_3
-admbx
-cuamd   <-
-
-FINAL
-aabcd
-abcdm
-admbx
+                FINAL
+                aabcd
+                abcdm
+                admbx
 ```
 
 --------------
 
 ```
-FICHIER_1
-aabcd
-abcdm
+FICHIER_1       FICHIER_2       FICHIER_3
+aabcd           bacdd           admbx
+abcdm           duxva   <-      cuamd   <-
 <-
 
-FICHIER_2
-bacdd
-duxva   <-
-
-FICHIER_3
-admbx
-cuamd   <-
-
-FINAL
-aabcd
-abcdm
-admbx
-bacdd
+                FINAL
+                aabcd
+                abcdm
+                admbx
+                bacdd
 ```
 
 --------------
 
 ```
-FICHIER_1
-aabcd
-abcdm
-<-
+FICHIER_1       FICHIER_2       FICHIER_3
+aabcd           bacdd           admbx
+abcdm           duxva   <-      cuamd
+<-                              <-
 
-FICHIER_2
-bacdd
-duxva   <-
-
-FICHIER_3
-admbx
-cuamd
-<-
-
-FINAL
-aabcd
-abcdm
-admbx
-bacdd
-cuamd
+                FINAL
+                aabcd
+                abcdm
+                admbx
+                bacdd
+                cuamd
 ```
 
 --------------
 
 ```
-FICHIER_1
-aabcd
-abcdm
-<-
+FICHIER_1       FICHIER_2       FICHIER_3
+aabcd           bacdd           admbx
+abcdm           duxva           cuamd
+<-              <-              <-
 
-FICHIER_2
-bacdd
-duxva
-<-
-
-FICHIER_3
-admbx
-cuamd
-<-
-
-FINAL
-aabcd
-abcdm
-admbx
-bacdd
-cuamd
-duxva
+                FINAL
+                aabcd
+                abcdm
+                admbx
+                bacdd
+                cuamd
+                duxva
 ```
