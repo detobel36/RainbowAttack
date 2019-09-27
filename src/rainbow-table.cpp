@@ -50,7 +50,7 @@ std::string search_in_table(std::string table_file_name, std::string hash_value)
         Rainbow_row result_row;
         while(table_file.read((char *) &result_row, sizeof(Rainbow_row)))
         {
-            if(reverse(index, hash_value) == result_row.pass_tail)
+            if(reverse(index, hash_value, PASS_SIZE) == result_row.pass_tail)
             {
                 if(DEBUG)
                 {
@@ -109,8 +109,11 @@ int main(int argc, char *argv[])
     generate_table(file_name);
     read_all_table(file_name);
 
-    reverse(1, "tEst1a");
-    reverse(1, "tEsx1a");
-    reverse(1, "Oa211n");
-    reverse(1, "wEst1a");
+    reverse(1, "tEsaxa", PASS_SIZE);
+    reverse(1, "tsxaxa", PASS_SIZE);
+    reverse(1, "Oa2axa", PASS_SIZE);
+    reverse(1, "wEsaxa", PASS_SIZE);
+    reverse(1, "tZEaxa", PASS_SIZE);
+    reverse(1, "Oa2axa", PASS_SIZE);
+    reverse(1, "wEsaxa", PASS_SIZE);
 }

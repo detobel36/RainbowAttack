@@ -1,6 +1,7 @@
 # Idées à implémenter/faire/essayer...
 - Fichier à accès aléatoire
 - Recherche en triant les tail et en faisant une recherche dicotomique
+- Vérifier que la "reverse" fonction est bien répartie (actuellement cela ne semble pas le cas)
 
 
 ## Méthode de tri
