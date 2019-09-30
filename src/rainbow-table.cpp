@@ -38,7 +38,8 @@ void read_all_table(std::string file_name) // display data from file:
 
 // Search in the table a specific hash to get the password
 // Input: the table file name and the hash that need to be found
-// Output: the password (which gives the hash_value passed as a parameter when it is hash)
+// Output: the password (which gives the hash_value passed as a parameter when it is hash) or NULL 
+// if not found
 std::string search_in_table(std::string table_file_name, std::string hash_value)
 {
     std::ifstream table_file(table_file_name, std::ios::out | std::ios::binary);
@@ -57,12 +58,15 @@ std::string search_in_table(std::string table_file_name, std::string hash_value)
                     std::cout << "Match pass: " << result_row.pass_tail << " (need to recover previous password)" << std::endl;
                 }
                 // TODO recover previous password
-                return hash_value;
+
+                table_file.close();
+                return result_row.pass_head;
             }
         }
         
         table_file.close();
     }
+    return NULL;
 }
 
 void generate_table(std::string output_file)
@@ -84,10 +88,11 @@ void generate_table(std::string output_file)
         Rainbow_row new_row;
         std::strncpy(new_row.pass_head, generate_password.c_str(), sizeof(new_row.pass_head)-1);
         new_row.pass_head[PASS_SIZE] = '\0';
+        
+        // TODO add a loop to do it multiple time
+        std::string computed_pass_tail = reverse(0, sha256(generate_password), PASS_SIZE);
 
-        // TODO hash - reduce - hash ...
-
-        std::strncpy(new_row.pass_tail, generate_password.c_str(), sizeof(new_row.pass_tail)-1);
+        std::strncpy(new_row.pass_tail, computed_pass_tail.c_str(), sizeof(new_row.pass_tail)-1);
         new_row.pass_tail[PASS_SIZE] = '\0';
 
         if(table_file)
