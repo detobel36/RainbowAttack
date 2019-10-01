@@ -22,6 +22,9 @@ const int MEMORY_SIZE = 28; // 1 000 000 000 char per file
 //     char pass_tail[PASS_SIZE+1];
 // };
 
+bool sort_array (char i[2][PASS_SIZE+1], char j[2][PASS_SIZE+1]) { return (i[1] < j[1]); }
+
+
 // Used for debug
 void read_all_table(std::string file_name) { // display data from file:
     std::ifstream table_file(file_name, std::ios::out | std::ios::binary);
@@ -115,6 +118,9 @@ void generate_table(std::string output_file) {
         ++current_batch;
 
         if (current_batch >= max_batch_elements) {
+            // Sort here
+            std::sort(&batch_passwords[0], &batch_passwords[current_batch-1], sort_array);
+
             // Create work file
             std::ofstream table_file(output_file + std::to_string(total_batch) + ".txt", std::ios::out | std::ios::binary);
             // Write to file
