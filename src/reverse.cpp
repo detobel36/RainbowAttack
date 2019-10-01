@@ -20,8 +20,7 @@ unsigned int string_to_int(const char* s, const int nbr_char_policy, const long 
 std::string int_to_string(long long int_hash, const int nbr_char_policy, const int string_size) {
     std::string result = "";
 
-    while(result.length() < string_size)
-    {
+    while (result.length() < string_size) {
         // Get new letter and add it to the final result
         result += rainbow::CHAR_POLICY[int_hash % nbr_char_policy];
         // Go to the next number
@@ -30,8 +29,7 @@ std::string int_to_string(long long int_hash, const int nbr_char_policy, const i
     return result;
 }
 
-std::string reverse(int index, std::string hash_value, int pass_size)
-{
+std::string reverse(int index, std::string hash_value, int pass_size) {
     std::string new_hash = sha256(hash_value);
     int nbr_char_policy = rainbow::CHAR_POLICY.length();
     long long modulo = pow(nbr_char_policy, pass_size);

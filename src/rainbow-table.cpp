@@ -15,15 +15,13 @@ const int NBR_LOOP = 3;
 // Display some debug message
 const bool DEBUG = true;
 
-struct Rainbow_row
-{
+struct Rainbow_row {
     char pass_head[PASS_SIZE+1];
     char pass_tail[PASS_SIZE+1];
 };
 
 // Used for debug
-void read_all_table(std::string file_name) // display data from file:
-{
+void read_all_table(std::string file_name) { // display data from file:
     std::ifstream table_file(file_name, std::ios::out | std::ios::binary);
 
     std::cout << std::endl;
@@ -43,8 +41,7 @@ void read_all_table(std::string file_name) // display data from file:
 // Input: the table file name and the hash that need to be found
 // Output: the password (which gives the hash_value passed as a parameter when it is hash) or NULL 
 // if not found
-std::string search_in_table(std::string table_file_name, std::string hash_value)
-{
+std::string search_in_table(std::string table_file_name, std::string hash_value) {
     std::ifstream table_file(table_file_name, std::ios::out | std::ios::binary);
 
     if (table_file) {
@@ -119,8 +116,7 @@ void generate_table(std::string output_file) {
 }
 
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     std::string file_name = "Employe.txt";
 
     generate_table(file_name);
