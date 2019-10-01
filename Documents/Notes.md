@@ -3,6 +3,11 @@
 - Recherche en triant les tail et en faisant une recherche dicotomique
 - Vérifier que la "reverse" fonction est bien répartie (actuellement cela ne semble pas le cas)
 
+# TODO
+- Boucle pour hash et reverse plusieurs fois
+- Mettre en place le sytème de tri
+- Passer d'un string à un binaire de manière plus efficace
+
 
 ## Méthode de tri
 
