@@ -9,7 +9,7 @@ unsigned int string_to_int(const char* s, const int nbr_char_policy, const long 
     long long int_result = 0;
     long long p_plus_one = p*nbr_char_policy;
 
-    for (const char *car = s; *car; car++) {
+    for (const char *car = s; *car; ++car) {
         int_result *= nbr_char_policy;
         int_result += (int)(*car);
         int_result %= p_plus_one;
@@ -41,4 +41,3 @@ std::string reverse(int index, std::string hash_value, int pass_size)
     std::string result_password = int_to_string(int_hash, nbr_char_policy, pass_size);
     return result_password;
 }
-

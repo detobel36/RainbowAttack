@@ -7,6 +7,7 @@
 
 const int PASS_SIZE = 6;
 const int NBR_PASS = 3;
+const int NBR_LOOP = 3;
 const bool DEBUG = true;
 
 struct Rainbow_row
@@ -51,6 +52,7 @@ std::string search_in_table(std::string table_file_name, std::string hash_value)
         Rainbow_row result_row;
         while(table_file.read((char *) &result_row, sizeof(Rainbow_row)))
         {
+            // We begin to check the tail
             if(reverse(index, hash_value, PASS_SIZE) == result_row.pass_tail)
             {
                 if(DEBUG)
@@ -62,6 +64,15 @@ std::string search_in_table(std::string table_file_name, std::string hash_value)
                 table_file.close();
                 return result_row.pass_head;
             }
+
+            // If not found, we compute from the first one
+            int i = 0; // number of
+            while(i < NBR_LOOP)
+            {
+
+                return ;
+            }
+
         }
         
         table_file.close();
@@ -90,7 +101,11 @@ void generate_table(std::string output_file)
         new_row.pass_head[PASS_SIZE] = '\0';
         
         // TODO add a loop to do it multiple time
-        std::string computed_pass_tail = reverse(0, sha256(generate_password), PASS_SIZE);
+        std::string computed_pass_tail = generate_password;
+        for(int i = 0; i < NBR_LOOP; ++i)
+        {
+            computed_pass_tail = reverse(i, sha256(computed_pass_tail), PASS_SIZE);
+        }
 
         std::strncpy(new_row.pass_tail, computed_pass_tail.c_str(), sizeof(new_row.pass_tail)-1);
         new_row.pass_tail[PASS_SIZE] = '\0';
