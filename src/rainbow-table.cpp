@@ -3,6 +3,11 @@
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
+
+#include <ctype.h>
+#include <stdlib.h>
+#include <unistd.h>
+
 #include "passwd-utils.hpp"
 #include "reverse.cpp"
 
@@ -253,10 +258,80 @@ void generate_table(std::string output_file) {
 
 
 int main(int argc, char *argv[]) {
-    std::string file_name = "result";
 
-    generate_table(file_name);
-    read_all_table(file_name + ".txt");
+    if (argc < 2) {
+        std::cout << "No operation specified" << std::endl;
+    } else {
+        char* generate_table_name = "";
+        int password_size = 6;
+        int nbr_password_generated = 100;
+        int nbr_loop_hash_reverse = 10;
+
+        int param;
+        while ((param = getopt(argc, argv, "p:t:n:h")) != -1) {
+            switch (param) {
+                case 't':
+                    if (optarg) {
+                        generate_table_name = optarg;
+                        if (DEBUG_LEVEL > 0) {
+                            std::cout << "Generate table in file: " << generate_table_name << std::endl;
+                        }
+                    }
+                    break;
+
+                case 'p':
+                    if (optarg) {
+                        password_size = std::atoi(optarg);
+                        if (DEBUG_LEVEL > 0) {
+                            std::cout << "Password size: " << password_size << std::endl;
+                        }
+                    }
+                    break;
+
+                case 'n':
+                    if(optarg) {
+                        nbr_password_generated = std::atoi(optarg);
+                        if (DEBUG_LEVEL > 0) {
+                            std::cout << "Number of password that must be generated: " << nbr_password_generated << std::endl;
+                        }
+                    }
+                    break;
+
+                case 'h':
+                    std::cout << "Help to execute: " << argv[0] << std::endl;
+                    std::cout << "\t-h\t\tDisplay this help" << std::endl;
+                    std::cout << "\t-t <file name>\tGenerate table and store in file" << std::endl;
+                    std::cout << "\t-p <size>\tSet password size (default: 6)" << std::endl;
+                    std::cout << "\t-n <number>\tNumber of password to generate (default: 100)" << std::endl;
+                    return 0;
+
+                case '?':
+                    if (isprint(optopt))
+                      fprintf(stderr, "Unknown option `-%c'.\n", optopt);
+                    else
+                      fprintf(stderr, "Unknown option character `\\x%x'.\n", optopt);
+                    return 1;
+
+                default:
+                    std::cout << "No option define" << std::endl;
+            }
+        }
+
+        for (int index = optind; index < argc; ++index) {
+            printf("Non-option argument %s\n", argv[index]);
+        }
+
+        if (generate_table_name != "") {
+            generate_table(generate_table_name);
+        }
+
+    }
+    return 0;
+
+    // std::string file_name = "result";
+
+    // generate_table(file_name);
+    // read_all_table(file_name + ".txt");
 
     // reverse(1, "tEsaxa", PASS_SIZE);
     // reverse(1, "tsxaxa", PASS_SIZE);

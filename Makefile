@@ -27,7 +27,7 @@ test-check: check-passwd
 	./check-passwd test/generate_pass.txt test/results.txt 
 
 test: clean rainbow-table
-	./rainbow-table
+	./rainbow-table -h
 
 clean: clear
 
