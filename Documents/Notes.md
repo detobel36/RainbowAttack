@@ -5,12 +5,13 @@
 
 # Questions
 - Pouvons-nous écrire ce que nous voulons dans le fichier stockant la rainbow table (un nombre au début)
+    - Est-ce que le fichier rainbow table doit pouvoir être "exporté" facilement ?  Et donc contenir la taille min-max des mot de passes, le nombre de mot de passe ect...
 - Autorisation d'utiliser les librairies pour le tri ? (quicksort dans une lib, autre...)
 
 
 # TODO
 - Vérifier que la boucle pour hash et reverse plusieurs fois
-- Mettre en place le sytème de tri (différents fichiers)
+- :heavy_check_mark: Mettre en place le sytème de tri (différents fichiers)
     - Adapter pour pouvoir gérer des tailles de mots de passe variable (de 6 à 10 par exemple)
 - Passer d'un string à un binaire de manière plus efficace
 
