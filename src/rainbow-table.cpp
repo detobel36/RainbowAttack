@@ -40,8 +40,8 @@ void read_all_table(std::string file_name) { // display data from file:
 
         char test[PASS_SIZE+1];
         char test2[PASS_SIZE+1];
-        while (table_file.read((char *) &test, PASS_SIZE+1*sizeof(char)) and
-            table_file.read((char *) &test2, PASS_SIZE+1*sizeof(char))) {
+        while (table_file.read((char *) &test, (PASS_SIZE+1)*sizeof(char)) and
+            table_file.read((char *) &test2, (PASS_SIZE+1)*sizeof(char))) {
             std::cout << test << " - " << test2 << std::endl;
         }
 
@@ -50,39 +50,70 @@ void read_all_table(std::string file_name) { // display data from file:
     std::cout << std::endl;
 }
 
+std::string dichotomique_search(std::ifstream & file, int start, int end, std::string search_pass) {
+    // If we select only one element
+    if (start == end) {
+        file.seekg(start*2*(PASS_SIZE+1), file.beg);  // Return the head
+
+        char pass_head[PASS_SIZE+1];
+        char pass_tail[PASS_SIZE+1];
+
+        file.read((char *) &pass_head, (PASS_SIZE+1)*sizeof(char));
+        file.read((char *) &pass_tail, (PASS_SIZE+1)*sizeof(char));
+
+        if (pass_tail == search_pass) {
+            return pass_head;
+        } else {
+            return ""; // If not found, return empty
+        }
+    }
+
+    // Else
+    int middle = start + (end-start)/2;
+    file.seekg(middle*2*(PASS_SIZE+1)+(PASS_SIZE+1), file.beg); // Move to middle + one (to have tail)
+
+    char pass_tail[PASS_SIZE+1];
+    file.read((char *) &pass_tail, (PASS_SIZE+1)*sizeof(char));
+    if (strcmp(search_pass.c_str(), pass_tail) < 0) {  // If search_pass is smaller than pass_tail
+        return dichotomique_search(file, start, middle, search_pass);
+    } else {
+        return dichotomique_search(file, middle, end, search_pass);
+    }
+}
+
 // Search in the table a specific hash to get the password
 // Input: the table file name and the hash that need to be found
 // Output: the password (which gives the hash_value passed as a parameter when it is hash) or NULL 
 // if not found
-// std::string search_in_table(std::string table_file_name, std::string hash_value) {
-//     std::ifstream table_file(table_file_name, std::ios::out | std::ios::binary);
+std::string search_in_table(std::string table_file_name, std::string hash_value) {
+    std::ifstream table_file(table_file_name, std::ios::out | std::ios::binary);
 
-//     if (table_file) {
+    if (table_file) {
+        int index_hash_reduce = NBR_LOOP;
+        std::string compute_pass = reverse(index_hash_reduce, hash_value, PASS_SIZE);
+        while (index_hash_reduce >= 1) {
+            std::string pass_head = dichotomique_search(table_file, 0, NBR_PASS, compute_pass);
+            if (pass_head != "") {  // If we have found
+                for (int i = 1; i < index_hash_reduce; ++i) {
+                    pass_head = reverse(i, sha256(pass_head), PASS_SIZE);
+                }
+                table_file.close();
+                return pass_head;
+            }
 
-//         char result_row[2*(PASS_SIZE+1)];
-//         while (table_file.read((char *) &result_row, 2*PASS_SIZE*sizeof(char))) {
-
-//             int index = NBR_LOOP;
-//             std::string compute_pass = reverse(index, hash_value, PASS_SIZE);
-//             // TODO inverser les boucles ici.  Pour profiter de la recherche "rapide"
-//             while (compute_pass != result_row.pass_tail and index > 1) {
-//                 --index;
-//                 compute_pass = reverse(index, sha256(compute_pass), PASS_SIZE);
-//             }
-
-//             if (compute_pass == result_row.pass_tail) { // If we correctly found the pass
-//                 if (DEBUG) {
-//                     std::cout << "Match pass: " << result_row.pass_tail << " after " << index << " matches" << std::endl;
-//                 }
-//                 table_file.close();
-//                 return compute_pass;
-//             }
-//         }
-        
-//         table_file.close();
-//     }
-//     return NULL;
-// }
+            // Else, compute new password
+            --index_hash_reduce;
+            if (index_hash_reduce > 0) {
+                compute_pass = reverse(index_hash_reduce, hash_value, PASS_SIZE);
+                for (int i = index_hash_reduce+1; i <= NBR_LOOP; ++i) {
+                    compute_pass = reverse(i, sha256(compute_pass), PASS_SIZE);
+                }
+            }
+        }
+        table_file.close();
+    }
+    return NULL;
+}
 
 void store_batch_in_file(char batch_passwords[][2][PASS_SIZE+1], 
         int nbr_password_in_batch, std::string output_file, int total_batch) {
