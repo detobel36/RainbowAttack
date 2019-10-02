@@ -9,8 +9,9 @@
 
 
 # TODO
-- Boucle pour hash et reverse plusieurs fois
-- Mettre en place le sytème de tri
+- Vérifier que la boucle pour hash et reverse plusieurs fois
+- Mettre en place le sytème de tri (différents fichiers)
+    - Adapter pour pouvoir gérer des tailles de mots de passe variable (de 6 à 10 par exemple)
 - Passer d'un string à un binaire de manière plus efficace
 
 
