@@ -3,7 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include "passwd-utils.hpp"
-#include "reverse.cpp"
+#include "reduce.cpp"
 
 // Size of passwords
 const int PASS_SIZE = 6;
@@ -50,11 +50,11 @@ std::string search_in_table(std::string table_file_name, std::string hash_value)
         while (table_file.read((char *) &result_row, sizeof(Rainbow_row))) {
 
             int index = NBR_LOOP;
-            std::string compute_pass = reverse(index, hash_value, PASS_SIZE);
+            std::string compute_pass = reduce(index, hash_value, PASS_SIZE);
             // TODO inverser les boucles ici.  Pour profiter de la recherche "rapide"
             while (compute_pass != result_row.pass_tail and index > 1) {
                 --index;
-                compute_pass = reverse(index, sha256(compute_pass), PASS_SIZE);
+                compute_pass = reduce(index, sha256(compute_pass), PASS_SIZE);
             }
 
             if (compute_pass == result_row.pass_tail) { // If we correctly found the pass
@@ -91,7 +91,7 @@ void generate_table(std::string output_file) {
         
         std::string computed_pass_tail = generate_password;
         for (int i = 1; i <= NBR_LOOP; ++i) {
-            computed_pass_tail = reverse(i, sha256(computed_pass_tail), PASS_SIZE);
+            computed_pass_tail = reduce(i, sha256(computed_pass_tail), PASS_SIZE);
             if (DEBUG and i != NBR_LOOP) {
                 std::cout << "Computed intermediary password: " << computed_pass_tail << std::endl;
             }
@@ -122,11 +122,11 @@ int main(int argc, char *argv[]) {
     generate_table(file_name);
     read_all_table(file_name);
 
-    reverse(1, "tEsaxa", PASS_SIZE);
-    reverse(1, "tsxaxa", PASS_SIZE);
-    reverse(1, "Oa2axa", PASS_SIZE);
-    reverse(1, "wEsaxa", PASS_SIZE);
-    reverse(1, "tZEaxa", PASS_SIZE);
-    reverse(1, "Oa2axa", PASS_SIZE);
-    reverse(1, "wEsaxa", PASS_SIZE);
+    reduce(1, "tEsaxa", PASS_SIZE);
+    reduce(1, "tsxaxa", PASS_SIZE);
+    reduce(1, "Oa2axa", PASS_SIZE);
+    reduce(1, "wEsaxa", PASS_SIZE);
+    reduce(1, "tZEaxa", PASS_SIZE);
+    reduce(1, "Oa2axa", PASS_SIZE);
+    reduce(1, "wEsaxa", PASS_SIZE);
 }

@@ -29,7 +29,7 @@ std::string int_to_string(long long int_hash, const int nbr_char_policy, const i
     return result;
 }
 
-std::string reverse(int index, std::string hash_value, int pass_size) {
+std::string reduce(int index, std::string hash_value, int pass_size) {
     std::string new_hash = sha256(hash_value);
     int nbr_char_policy = rainbow::CHAR_POLICY.length();
     long long modulo = pow(nbr_char_policy, pass_size);
