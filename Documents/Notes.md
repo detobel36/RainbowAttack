@@ -3,6 +3,11 @@
 - Recherche en triant les tail et en faisant une recherche dicotomique
 - Vérifier que la "reverse" fonction est bien répartie (actuellement cela ne semble pas le cas)
 
+# Questions
+- Pouvons-nous écrire ce que nous voulons dans le fichier stockant la rainbow table (un nombre au début)
+- Autorisation d'utiliser les librairies pour le tri ? (quicksort dans une lib, autre...)
+
+
 # TODO
 - Boucle pour hash et reverse plusieurs fois
 - Mettre en place le sytème de tri
