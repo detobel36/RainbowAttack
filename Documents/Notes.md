@@ -7,6 +7,13 @@
 - Pouvons-nous écrire ce que nous voulons dans le fichier stockant la rainbow table (un nombre au début)
 - Autorisation d'utiliser les librairies pour le tri ? (quicksort dans une lib, autre...)
 
+
+# TODO
+- Boucle pour hash et reverse plusieurs fois
+- Mettre en place le sytème de tri
+- Passer d'un string à un binaire de manière plus efficace
+
+
 ## Méthode de tri
 
 Il n'est pas possible de trier directement tous les mot de passes "tail".  Ils ne rentrent pas tous dans la mémoire (max 12Go).   
