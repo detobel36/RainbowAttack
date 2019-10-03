@@ -36,6 +36,6 @@ std::string reverse(int index, std::string hash_value, int pass_size) {
     // Convert new hash in integer
     // TODO need to be enhance (it is maybe possible to directly cast string into an integer/binary)
     long long int_hash = string_to_int(new_hash.c_str(), nbr_char_policy, modulo);
-    std::string result_password = int_to_string(int_hash, nbr_char_policy, pass_size);
+    std::string result_password = int_to_string(int_hash+1, nbr_char_policy, pass_size);
     return result_password;
 }
