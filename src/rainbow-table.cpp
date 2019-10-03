@@ -35,8 +35,8 @@ int sort_array (const void *a, const void *b) {
     // TODO optimise here
 
     // Get the first element and must sort based on the second
-    char * new_a = ((char *) a) + nbr_pass + 1;
-    char * new_b = ((char *) b) + nbr_pass + 1;
+    char * new_a = ((char *) a) + pass_size + 1;
+    char * new_b = ((char *) b) + pass_size + 1;
     return strcmp(new_a, new_b);
 }
 
@@ -63,6 +63,10 @@ void read_all_table(std::string file_name) { // display data from file:
 }
 
 std::string dichotomique_search(std::ifstream & file, int start, int end, std::string search_pass) {
+    if (start > end) { // If we have search all elements
+        return "";
+    }
+
     // If we select only one element
     if (start == end) {
         file.seekg(start*2*(pass_size+1), file.beg);  // Return the head
@@ -81,15 +85,19 @@ std::string dichotomique_search(std::ifstream & file, int start, int end, std::s
     }
 
     // Else
-    int middle = start + (end-start)/2;
+    int middle = start + ((end-start)/2);
     file.seekg(middle*2*(pass_size+1)+(pass_size+1), file.beg); // Move to middle + one (to have tail)
 
     char pass_tail[pass_size+1];
     file.read((char *) &pass_tail, (pass_size+1)*sizeof(char));
-    if (strcmp(search_pass.c_str(), pass_tail) < 0) {  // If search_pass is smaller than pass_tail
-        return dichotomique_search(file, start, middle, search_pass);
+    
+    int comparison_value = strcmp(search_pass.c_str(), pass_tail);
+    if (comparison_value == 0) {
+        return dichotomique_search(file, middle, middle, search_pass);
+    } else if (comparison_value < 0) {  // If search_pass is smaller than pass_tail
+        return dichotomique_search(file, start, middle-1, search_pass);
     } else {
-        return dichotomique_search(file, middle, end, search_pass);
+        return dichotomique_search(file, middle+1, end, search_pass);
     }
 }
 
@@ -102,6 +110,7 @@ std::string search_in_table(std::string table_file_name, std::string hash_value)
 
     if (table_file) {
         int index_hash_reduce = nbr_loop;
+        
         std::string compute_pass = reverse(index_hash_reduce, hash_value, pass_size);
         while (index_hash_reduce >= 1) {
             std::string pass_head = dichotomique_search(table_file, 0, nbr_pass, compute_pass);
@@ -124,7 +133,7 @@ std::string search_in_table(std::string table_file_name, std::string hash_value)
         }
         table_file.close();
     }
-    return NULL;
+    return "";
 }
 
 void store_batch_in_file(char batch_passwords[][2][pass_size+1], 
@@ -140,6 +149,7 @@ void store_batch_in_file(char batch_passwords[][2][pass_size+1],
     // Close file
     table_file.close();
 }
+
 
 // TODO optimise here.  Maybe sort directly when password are fetch (with a heap)
 // Method to have min element index in a sequence...
@@ -266,93 +276,104 @@ void generate_table(std::string output_file) {
 
 int main(int argc, char *argv[]) {
 
-    if (argc < 2) {
-        std::cout << "No operation specified" << std::endl;
-    } else {
-        char* generate_table_name = "";
-        int nbr_loop = 10;
+    // if (argc < 2) {
+    //     std::cout << "No operation specified" << std::endl;
+    // } else {
+    //     char* generate_table_name = "";
+    //     int nbr_loop = 10;
 
-        int param;
-        while ((param = getopt(argc, argv, "p:t:n:l:h")) != -1) {
-            switch (param) {
-                case 't':
-                    if (optarg) {
-                        generate_table_name = optarg;
-                        if (DEBUG_LEVEL > 0) {
-                            std::cout << "Generate table in file: " << generate_table_name << std::endl;
-                        }
-                    }
-                    break;
+    //     int param;
+    //     while ((param = getopt(argc, argv, "p:t:n:l:h")) != -1) {
+    //         switch (param) {
+    //             case 't':
+    //                 if (optarg) {
+    //                     generate_table_name = optarg;
+    //                     if (DEBUG_LEVEL > 0) {
+    //                         std::cout << "Generate table in file: " << generate_table_name << std::endl;
+    //                     }
+    //                 }
+    //                 break;
 
-                case 'p':
-                    if (optarg) {
-                        // pass_size = std::atoi(optarg);
-                        if (DEBUG_LEVEL > 0) {
-                            std::cout << "Password size: " << pass_size << std::endl;
-                        }
-                    }
-                    break;
+    //             case 'p':
+    //                 if (optarg) {
+    //                     // pass_size = std::atoi(optarg);
+    //                     if (DEBUG_LEVEL > 0) {
+    //                         std::cout << "Password size: " << pass_size << std::endl;
+    //                     }
+    //                 }
+    //                 break;
 
-                case 'n':
-                    if(optarg) {
-                        // nbr_pass = std::atoi(optarg);
-                        if (DEBUG_LEVEL > 0) {
-                            std::cout << "Number of password that must be generated: " << nbr_pass << std::endl;
-                        }
-                    }
-                    break;
+    //             case 'n':
+    //                 if(optarg) {
+    //                     // nbr_pass = std::atoi(optarg);
+    //                     if (DEBUG_LEVEL > 0) {
+    //                         std::cout << "Number of password that must be generated: " << nbr_pass << std::endl;
+    //                     }
+    //                 }
+    //                 break;
 
-                case 'l':
-                    if(optarg) {
-                        // nbr_loop = std::atoi(optarg);
-                        if (DEBUG_LEVEL > 0) {
-                            std::cout << "Number of hash/reduce: " << nbr_loop << std::endl;
-                        }
-                    }
-                    break;
+    //             case 'l':
+    //                 if(optarg) {
+    //                     // nbr_loop = std::atoi(optarg);
+    //                     if (DEBUG_LEVEL > 0) {
+    //                         std::cout << "Number of hash/reduce: " << nbr_loop << std::endl;
+    //                     }
+    //                 }
+    //                 break;
 
-                case 'h':
-                    std::cout << "Help to execute: " << argv[0] << std::endl;
-                    std::cout << "\t-h\t\tDisplay this help" << std::endl;
-                    std::cout << "\t-t <file name>\tGenerate table and store in file" << std::endl;
-                    std::cout << "\t-p <size>\tSet password size (default: " << DEFAULT_PASS_SIZE << ")" << std::endl;
-                    std::cout << "\t-n <number>\tNumber of password to generate (default: " << DEFAULT_NBR_PASS << ")" << std::endl;
-                    std::cout << "\t-l <number>\tNumber of hash/reduce (default: " << DEFAULT_NBR_LOOP << ")" << std::endl;
-                    return 0;
+    //             case 'h':
+    //                 std::cout << "Help to execute: " << argv[0] << std::endl;
+    //                 std::cout << "\t-h\t\tDisplay this help" << std::endl;
+    //                 std::cout << "\t-t <file name>\tGenerate table and store in file" << std::endl;
+    //                 std::cout << "\t-p <size>\tSet password size (default: " << DEFAULT_PASS_SIZE << ")" << std::endl;
+    //                 std::cout << "\t-n <number>\tNumber of password to generate (default: " << DEFAULT_NBR_PASS << ")" << std::endl;
+    //                 std::cout << "\t-l <number>\tNumber of hash/reduce (default: " << DEFAULT_NBR_LOOP << ")" << std::endl;
+    //                 return 0;
 
-                case '?':
-                    if (isprint(optopt))
-                      fprintf(stderr, "Unknown option `-%c'.\n", optopt);
-                    else
-                      fprintf(stderr, "Unknown option character `\\x%x'.\n", optopt);
-                    return 1;
+    //             case '?':
+    //                 if (isprint(optopt))
+    //                   fprintf(stderr, "Unknown option `-%c'.\n", optopt);
+    //                 else
+    //                   fprintf(stderr, "Unknown option character `\\x%x'.\n", optopt);
+    //                 return 1;
 
-                default:
-                    std::cout << "No option define" << std::endl;
-            }
-        }
+    //             default:
+    //                 std::cout << "No option define" << std::endl;
+    //         }
+    //     }
 
-        for (int index = optind; index < argc; ++index) {
-            printf("Non-option argument %s\n", argv[index]);
-        }
+    //     for (int index = optind; index < argc; ++index) {
+    //         printf("Non-option argument %s\n", argv[index]);
+    //     }
 
-        if (generate_table_name != "") {
-            generate_table(generate_table_name);
-        }
+    //     if (generate_table_name != "") {
+    //         generate_table(generate_table_name);
+    //     }
 
-    }
-    return 0;
+    // }
+    // return 0;
 
-    // std::string file_name = "result";
+    std::string file_name = "result";
 
     // generate_table(file_name);
     // read_all_table(file_name + ".txt");
 
-    // reverse(1, "tEsaxa", PASS_SIZE);
-    // reverse(1, "tsxaxa", PASS_SIZE);
-    // reverse(1, "Oa2axa", PASS_SIZE);
-    // reverse(1, "wEsaxa", PASS_SIZE);
-    // reverse(1, "tZEaxa", PASS_SIZE);
-    // reverse(1, "Oa2axa", PASS_SIZE);
-    // reverse(1, "wEsaxa", PASS_SIZE);
+    /*
+    Genrated password: 16UutT
+
+    Compute hash: 387efcb493828b653163d832e584cc007cb226b364612812075e7c02b4a92741
+    Computed intermediary password: 99w68r
+
+    Compute hash: 2f031890be64b43f79402106df0cb1787a32cd80733017cb65b95bdeab04a94a
+    Computed intermediary password: kr4jnz
+
+    Compute hash: f8a11b5a282a865bfe750f43bb55b5de345e1a7be9db184c238edbb4ace2e63b
+    Computed tail password: nxDlmz
+    */
+
+    std::string result = search_in_table(file_name + ".txt", "2f031890be64b43f79402106df0cb1787a32cd80733017cb65b95bdeab04a94a");
+    std::cout << "Result: " << result << std::endl;
+
+    return 0;
+
 }
