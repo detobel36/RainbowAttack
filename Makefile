@@ -1,3 +1,4 @@
+# TODO to final compilation: -O3
 all:
 	@echo Hello world !
 
