@@ -14,12 +14,12 @@
 // Size of passwords
 const int PASS_SIZE = 6; // Didn't include '\0' at the end
 // Number of passwords in the rainbow table
-const int NBR_PASS = 5000;
+const int NBR_PASS = 10000;
 // Number of hash - reduce done before to have the tail
 // Warning: begin at 1 and end include "NBR_LOOP" (so [1, NBR_LOOP])
 const int NBR_LOOP = 3;
 // Display some debug message
-const int DEBUG_LEVEL = 1; // 0 = no debug, 1 = some message, 2 = all message
+const int DEBUG_LEVEL = 2; // 0 = no debug, 1 = some message, 2 = all message
 // Max memore size used to store rainbow row
 const int MEMORY_SIZE = 9*((PASS_SIZE+1)*2); // Store 50 password per file
 // Note, to have 1Go -> 1 000 000 000 char per file
@@ -140,8 +140,8 @@ void store_batch_in_file(char batch_passwords[][2][PASS_SIZE+1],
 int index_min_element(char first_passwords[][2][PASS_SIZE+1], int total_password) {
     std::size_t index = 0;
     int min_index = -1;
-
     while (index < total_password) {
+        std::cout << "first_passwords[][0]: " << first_passwords[index][0] <<  std::endl;
         if (first_passwords[index][1][0] != '\0' and (min_index < 0 or 
             strcmp(first_passwords[index][1], first_passwords[min_index][1]) < 0)) {
             min_index = index;
@@ -164,8 +164,8 @@ void generate_table(std::string output_file) {
     char batch_passwords[max_batch_elements][2][PASS_SIZE+1];
 
     int i = 0;
-    int current_batch = 0;
-    int total_batch = 0;
+    int  current_batch = 0;
+    int  total_batch = 0;
     while (i < NBR_PASS) {
         // Generate password
         std::string generate_password = rainbow::generate_passwd(PASS_SIZE);
@@ -222,6 +222,7 @@ void generate_table(std::string output_file) {
     // Open result file
     std::ofstream result_table_file(output_file + ".txt", std::ios::out | std::ios::binary);
     
+
     // Open all file and read first pass head and tail
     char first_passwords[total_batch][2][PASS_SIZE+1];
     std::ifstream tmp_table_file[total_batch];
@@ -235,24 +236,31 @@ void generate_table(std::string output_file) {
         tmp_table_file[file_index].read((char *) &first_passwords[file_index][1], PASS_SIZE+1*sizeof(char));
     }
 
+
     int index_pass = 0;
     while (index_pass < NBR_PASS) {
+        std::cout << "index_pass: " << index_pass<<std::endl;
         int min_element = index_min_element(first_passwords, total_batch);
+        
+        std::cout << "min_index: " << min_element << std::endl;
+        result_table_file.write((char *) first_passwords[min_element], 2*(PASS_SIZE+1)*sizeof(char));           //SEGFAULTS !!!
 
-        result_table_file.write((char *) first_passwords[min_element], 2*(PASS_SIZE+1)*sizeof(char));
-
-        // Head
+         // Head
         tmp_table_file[min_element].read((char *) &first_passwords[min_element][0], PASS_SIZE+1*sizeof(char));
         // Tail
+        
         bool result = (bool) tmp_table_file[min_element].read((char *) &first_passwords[min_element][1], PASS_SIZE+1*sizeof(char));
-
+       
         // If we couldn't read the next element, file is finish
         if (!result) {
             first_passwords[min_element][0][0] = '\0';
+            
             first_passwords[min_element][1][0] = '\0';
+            
         }
         ++index_pass;
     }
+    //std::cout << "Potato" << std::endl;
 
     for (int file_index = 0; file_index < total_batch; ++file_index) {
         // Close file
