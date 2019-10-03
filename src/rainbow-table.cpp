@@ -3,7 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
-
+#include <map>
 #include <ctype.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -14,7 +14,7 @@
 // Size of passwords
 const int PASS_SIZE = 6; // Didn't include '\0' at the end
 // Number of passwords in the rainbow table
-const int NBR_PASS = 20;
+const int NBR_PASS = 5000;
 // Number of hash - reduce done before to have the tail
 // Warning: begin at 1 and end include "NBR_LOOP" (so [1, NBR_LOOP])
 const int NBR_LOOP = 3;
@@ -23,6 +23,7 @@ const int DEBUG_LEVEL = 1; // 0 = no debug, 1 = some message, 2 = all message
 // Max memore size used to store rainbow row
 const int MEMORY_SIZE = 9*((PASS_SIZE+1)*2); // Store 50 password per file
 // Note, to have 1Go -> 1 000 000 000 char per file
+std::map<char, int> counterDict;
 
 int sort_array (const void *a, const void *b) {
     // TODO optimise here
@@ -37,7 +38,7 @@ int sort_array (const void *a, const void *b) {
 // Used for debug
 void read_all_table(std::string file_name) { // display data from file:
     std::ifstream table_file(file_name, std::ios::out | std::ios::binary);
-
+    
     std::cout << std::endl;
     std::cout << "Read file " << file_name << ":" << std::endl;
     if (table_file) {
@@ -152,6 +153,10 @@ int index_min_element(char first_passwords[][2][PASS_SIZE+1], int total_password
 
 void generate_table(std::string output_file) {
 
+    for(int i=0; i<rainbow::CHAR_POLICY.length(); i++){
+        counterDict[rainbow::CHAR_POLICY[i]] = 0;
+    }
+
     int max_batch_elements = MEMORY_SIZE/(2*(PASS_SIZE+1));
     if (DEBUG_LEVEL > 0) {
         std::cout << "Max number of element in a batch: " << max_batch_elements << std::endl;
@@ -164,6 +169,9 @@ void generate_table(std::string output_file) {
     while (i < NBR_PASS) {
         // Generate password
         std::string generate_password = rainbow::generate_passwd(PASS_SIZE);
+        for(int i=0; i<generate_password.length();i++){
+            counterDict[generate_password[i]] +=1;
+        }
         if (DEBUG_LEVEL > 0) {
             std::cout << "Genrated password: " << generate_password << std::endl;
         }
@@ -254,6 +262,11 @@ void generate_table(std::string output_file) {
         remove(file_name.c_str());
     }
     result_table_file.close();
+    if(DEBUG_LEVEL > 1){    
+        for (auto& x: counterDict){
+            std::cout<< "Character distribution: " << x.first << " - " << x.second <<  "<=>" << x.second/(float(NBR_PASS)*PASS_SIZE) << "%" << std::endl;
+        }
+    }
 }
 
 
@@ -323,9 +336,11 @@ int main(int argc, char *argv[]) {
 
         if (generate_table_name != "") {
             generate_table(generate_table_name);
+            read_all_table(generate_table_name);
         }
 
     }
+    
     return 0;
 
     // std::string file_name = "result";
