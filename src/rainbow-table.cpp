@@ -16,7 +16,7 @@ const int DEFAULT_PASS_SIZE = 6; // Didn't include '\0' at the end
 const int pass_size = DEFAULT_PASS_SIZE;
 
 // Number of passwords in the rainbow table
-const int DEFAULT_NBR_PASS = 20;
+const int DEFAULT_NBR_PASS = 1000000;
 const int nbr_pass = DEFAULT_NBR_PASS;
 
 // Number of hash - reduce done before to have the tail
@@ -276,104 +276,104 @@ void generate_table(std::string output_file) {
 
 int main(int argc, char *argv[]) {
 
-    // if (argc < 2) {
-    //     std::cout << "No operation specified" << std::endl;
-    // } else {
-    //     char* generate_table_name = "";
-    //     int nbr_loop = 10;
+    if (argc < 2) {
+        std::cout << "No operation specified" << std::endl;
+    } else {
+        char* generate_table_name = "";
+        int nbr_loop = 10;
 
-    //     int param;
-    //     while ((param = getopt(argc, argv, "p:t:n:l:h")) != -1) {
-    //         switch (param) {
-    //             case 't':
-    //                 if (optarg) {
-    //                     generate_table_name = optarg;
-    //                     if (DEBUG_LEVEL > 0) {
-    //                         std::cout << "Generate table in file: " << generate_table_name << std::endl;
-    //                     }
-    //                 }
-    //                 break;
+        int param;
+        while ((param = getopt(argc, argv, "p:t:n:l:h")) != -1) {
+            switch (param) {
+                case 't':
+                    if (optarg) {
+                        generate_table_name = optarg;
+                        if (DEBUG_LEVEL > 0) {
+                            std::cout << "Generate table in file: " << generate_table_name << std::endl;
+                        }
+                    }
+                    break;
 
-    //             case 'p':
-    //                 if (optarg) {
-    //                     // pass_size = std::atoi(optarg);
-    //                     if (DEBUG_LEVEL > 0) {
-    //                         std::cout << "Password size: " << pass_size << std::endl;
-    //                     }
-    //                 }
-    //                 break;
+                case 'p':
+                    if (optarg) {
+                        // pass_size = std::atoi(optarg);
+                        if (DEBUG_LEVEL > 0) {
+                            std::cout << "Password size: " << pass_size << std::endl;
+                        }
+                    }
+                    break;
 
-    //             case 'n':
-    //                 if(optarg) {
-    //                     // nbr_pass = std::atoi(optarg);
-    //                     if (DEBUG_LEVEL > 0) {
-    //                         std::cout << "Number of password that must be generated: " << nbr_pass << std::endl;
-    //                     }
-    //                 }
-    //                 break;
+                case 'n':
+                    if(optarg) {
+                        // nbr_pass = std::atoi(optarg);
+                        if (DEBUG_LEVEL > 0) {
+                            std::cout << "Number of password that must be generated: " << nbr_pass << std::endl;
+                        }
+                    }
+                    break;
 
-    //             case 'l':
-    //                 if(optarg) {
-    //                     // nbr_loop = std::atoi(optarg);
-    //                     if (DEBUG_LEVEL > 0) {
-    //                         std::cout << "Number of hash/reduce: " << nbr_loop << std::endl;
-    //                     }
-    //                 }
-    //                 break;
+                case 'l':
+                    if(optarg) {
+                        // nbr_loop = std::atoi(optarg);
+                        if (DEBUG_LEVEL > 0) {
+                            std::cout << "Number of hash/reduce: " << nbr_loop << std::endl;
+                        }
+                    }
+                    break;
 
-    //             case 'h':
-    //                 std::cout << "Help to execute: " << argv[0] << std::endl;
-    //                 std::cout << "\t-h\t\tDisplay this help" << std::endl;
-    //                 std::cout << "\t-t <file name>\tGenerate table and store in file" << std::endl;
-    //                 std::cout << "\t-p <size>\tSet password size (default: " << DEFAULT_PASS_SIZE << ")" << std::endl;
-    //                 std::cout << "\t-n <number>\tNumber of password to generate (default: " << DEFAULT_NBR_PASS << ")" << std::endl;
-    //                 std::cout << "\t-l <number>\tNumber of hash/reduce (default: " << DEFAULT_NBR_LOOP << ")" << std::endl;
-    //                 return 0;
+                case 'h':
+                    std::cout << "Help to execute: " << argv[0] << std::endl;
+                    std::cout << "\t-h\t\tDisplay this help" << std::endl;
+                    std::cout << "\t-t <file name>\tGenerate table and store in file" << std::endl;
+                    std::cout << "\t-p <size>\tSet password size (default: " << DEFAULT_PASS_SIZE << ")" << std::endl;
+                    std::cout << "\t-n <number>\tNumber of password to generate (default: " << DEFAULT_NBR_PASS << ")" << std::endl;
+                    std::cout << "\t-l <number>\tNumber of hash/reduce (default: " << DEFAULT_NBR_LOOP << ")" << std::endl;
+                    return 0;
 
-    //             case '?':
-    //                 if (isprint(optopt))
-    //                   fprintf(stderr, "Unknown option `-%c'.\n", optopt);
-    //                 else
-    //                   fprintf(stderr, "Unknown option character `\\x%x'.\n", optopt);
-    //                 return 1;
+                case '?':
+                    if (isprint(optopt))
+                      fprintf(stderr, "Unknown option `-%c'.\n", optopt);
+                    else
+                      fprintf(stderr, "Unknown option character `\\x%x'.\n", optopt);
+                    return 1;
 
-    //             default:
-    //                 std::cout << "No option define" << std::endl;
-    //         }
-    //     }
+                default:
+                    std::cout << "No option define" << std::endl;
+            }
+        }
 
-    //     for (int index = optind; index < argc; ++index) {
-    //         printf("Non-option argument %s\n", argv[index]);
-    //     }
+        for (int index = optind; index < argc; ++index) {
+            printf("Non-option argument %s\n", argv[index]);
+        }
 
-    //     if (generate_table_name != "") {
-    //         generate_table(generate_table_name);
-    //     }
+        if (generate_table_name != "") {
+            generate_table(generate_table_name);
+        }
 
-    // }
-    // return 0;
-
-    std::string file_name = "result";
-
-    // generate_table(file_name);
-    // read_all_table(file_name + ".txt");
-
-    /*
-    Genrated password: 16UutT
-
-    Compute hash: 387efcb493828b653163d832e584cc007cb226b364612812075e7c02b4a92741
-    Computed intermediary password: 99w68r
-
-    Compute hash: 2f031890be64b43f79402106df0cb1787a32cd80733017cb65b95bdeab04a94a
-    Computed intermediary password: kr4jnz
-
-    Compute hash: f8a11b5a282a865bfe750f43bb55b5de345e1a7be9db184c238edbb4ace2e63b
-    Computed tail password: nxDlmz
-    */
-
-    std::string result = search_in_table(file_name + ".txt", "2f031890be64b43f79402106df0cb1787a32cd80733017cb65b95bdeab04a94a");
-    std::cout << "Result: " << result << std::endl;
-
+    }
     return 0;
+
+    // std::string file_name = "result";
+
+    // // generate_table(file_name);
+    // // read_all_table(file_name + ".txt");
+
+    
+    // Genrated password: 16UutT
+
+    // Compute hash: 387efcb493828b653163d832e584cc007cb226b364612812075e7c02b4a92741
+    // Computed intermediary password: 99w68r
+
+    // Compute hash: 2f031890be64b43f79402106df0cb1787a32cd80733017cb65b95bdeab04a94a
+    // Computed intermediary password: kr4jnz
+
+    // Compute hash: f8a11b5a282a865bfe750f43bb55b5de345e1a7be9db184c238edbb4ace2e63b
+    // Computed tail password: nxDlmz
+    
+
+    // std::string result = search_in_table(file_name + ".txt", "2f031890be64b43f79402106df0cb1787a32cd80733017cb65b95bdeab04a94a");
+    // std::cout << "Result: " << result << std::endl;
+
+    // return 0;
 
 }
