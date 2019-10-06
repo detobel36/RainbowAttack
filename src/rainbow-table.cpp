@@ -16,7 +16,7 @@ const int DEFAULT_PASS_SIZE = 6; // Didn't include '\0' at the end
 const int pass_size = DEFAULT_PASS_SIZE;
 
 // Number of passwords in the rainbow table
-const int DEFAULT_NBR_PASS = 1000000;
+const int DEFAULT_NBR_PASS = 20;
 const int nbr_pass = DEFAULT_NBR_PASS;
 
 // Number of hash - reduce done before to have the tail
@@ -28,7 +28,7 @@ const int nbr_loop = DEFAULT_NBR_LOOP;
 const int DEBUG_LEVEL = 0; // 0 = no debug, 1 = some message, 2 = all message
 
 // Max memore size used to store rainbow row
-const int MAX_ELEMENT_PER_BATCH = 200000;
+const int MAX_ELEMENT_PER_BATCH = 20;
 const int MEMORY_SIZE = MAX_ELEMENT_PER_BATCH*((nbr_pass+1)*2); // Store 100 password per file
 // Note, to have 1Go -> 1 000 000 000 char per file
 
@@ -154,13 +154,14 @@ void store_batch_in_file(char batch_passwords[][2][pass_size+1],
 
 // TODO optimise here.  Maybe sort directly when password are fetch (with a heap)
 // Method to have min element index in a sequence...
-int index_min_element(char first_passwords[][2][pass_size+1], int total_password) {
+int index_min_element(char*** first_passwords, int total_password) {
     std::size_t index = 0;
     int min_index = -1;
 
     while (index < total_password) {
-        if (first_passwords[index][1][0] != '\0' and (min_index < 0 or 
-            strcmp(first_passwords[index][1], first_passwords[min_index][1]) < 0)) {
+        if (*(*(*(first_passwords+(index*2*(pass_size+1))+(pass_size+1)))) != '\0' and (min_index < 0 or 
+            strcmp(*(*(first_passwords+(index*2*(pass_size+1))+(pass_size+1))), *(*(first_passwords+(min_index*2*(pass_size+1))+(pass_size+1)))) < 0)) {
+            std::cout << "index_min_element " << *(*(first_passwords+(index*2*(pass_size+1))+(pass_size+1))) << std::endl;
             min_index = index;
         }
         ++index;
@@ -239,16 +240,16 @@ void generate_table(std::string output_file) {
     std::ofstream result_table_file(output_file + ".txt", std::ios::out | std::ios::binary);
     
     // Open all file and read first pass head and tail
-    char first_passwords[total_batch][2][pass_size+1];
+    char*** first_passwords = (char***) malloc(total_batch*2*(pass_size+1));
     std::ifstream tmp_table_file[total_batch];
     for (int file_index = 0; file_index < total_batch; ++file_index) {
         tmp_table_file[file_index] = std::ifstream(output_file + std::to_string(file_index) + ".txt", 
             std::ios::out | std::ios::binary);
 
         // Head
-        tmp_table_file[file_index].read((char *) &first_passwords[file_index][0], pass_size+1*sizeof(char));
+        tmp_table_file[file_index].read((char *) *(*(first_passwords+(file_index*2*(pass_size+1)))), pass_size+1*sizeof(char));
         // Tail
-        tmp_table_file[file_index].read((char *) &first_passwords[file_index][1], pass_size+1*sizeof(char));
+        tmp_table_file[file_index].read((char *) *(*(first_passwords+(file_index*2*(pass_size+1))+(pass_size+1))), pass_size+1*sizeof(char));
     }
 
     int index_pass = 0;
@@ -256,28 +257,34 @@ void generate_table(std::string output_file) {
     char* last_tail_password = "";
     while (index_pass < nbr_pass) {
         int min_element = index_min_element(first_passwords, total_batch);
-        char* tail_password = first_passwords[min_element][1];
+        char* tail_password = *(*(first_passwords+(min_element*2*(pass_size+1))+(pass_size+1)));
 
         if (last_tail_password != tail_password) {
             last_tail_password = tail_password;
-            result_table_file.write((char *) first_passwords[min_element], 2*(pass_size+1)*sizeof(char));
+            result_table_file.write((char *) *(first_passwords+(min_element*2*(pass_size+1))), 2*(pass_size+1)*sizeof(char));
         } else {
             ++nbr_doublon;
         }
 
         // Head
-        tmp_table_file[min_element].read((char *) &first_passwords[min_element][0], pass_size+1*sizeof(char));
+        tmp_table_file[min_element].read((char *) *(*(first_passwords + (min_element*2*(pass_size+1)))), pass_size+1*sizeof(char));
         // Tail
-        bool result = (bool) tmp_table_file[min_element].read((char *) &first_passwords[min_element][1], pass_size+1*sizeof(char));
+        bool result = (bool) tmp_table_file[min_element].read((char *) *(*(first_passwords + (min_element*2*(pass_size+1)) + pass_size+1)), pass_size+1*sizeof(char));
 
         // If we couldn't read the next element, file is finish
         if (!result) {
-            first_passwords[min_element][0][0] = '\0';
-            first_passwords[min_element][1][0] = '\0';
+            char* reset_head = *(*(first_passwords+(min_element*2*(pass_size+1))));
+            reset_head = (char *) '\0';
+            std::cout << "Reset: " << *(*(first_passwords+(min_element*2*(pass_size+1)))) << std::endl;
+            char* reset_tail = *(*(first_passwords+(min_element*2*(pass_size+1))+pass_size+1));
+            reset_tail = (char *) '\0';
+            // first_passwords[min_element][0][0] = '\0';
+            // first_passwords[min_element][1][0] = '\0';
         }
         ++index_pass;
     }
     std::cout << nbr_doublon << "/" << nbr_pass << std::endl;
+    free(first_passwords);
 
     for (int file_index = 0; file_index < total_batch; ++file_index) {
         // Close file
@@ -374,7 +381,7 @@ int main(int argc, char *argv[]) {
 
     std::string file_name = "test_size";
 
-    // generate_table(file_name);
+    generate_table(file_name);
     // read_all_table(file_name + ".txt");
 
     /*
@@ -393,8 +400,8 @@ int main(int argc, char *argv[]) {
 
     // TODO ne retourne pas le bon résultat !
     // d0ab54c4fffe32871b1557d5d424f69391998b98253b3342d394cd29ef58ff5b
-    std::string result = search_in_table(file_name + ".txt", "d0ab54c4fffe32871b1557d5d424f69391998b98253b3342d394cd29ef58ff5b");
-    std::cout << "Result: " << result << std::endl;
+    // std::string result = search_in_table(file_name + ".txt", "d0ab54c4fffe32871b1557d5d424f69391998b98253b3342d394cd29ef58ff5b");
+    // std::cout << "Result: " << result << std::endl;
 
     return 0;
 
