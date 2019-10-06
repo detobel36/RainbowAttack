@@ -159,10 +159,13 @@ int index_min_element(char*** first_passwords, int total_password) {
     int min_index = -1;
 
     while (index < total_password) {
+        std::cout << "Compare: " << "(index: " << index << ") " << ((char *) first_passwords+(index*2*(pass_size+1))+(pass_size+1)) << " - " << 
+                " (min index: " << min_index << ") " << ((char *) first_passwords+(min_index*2*(pass_size+1))+(pass_size+1)) << std::endl;
+
         if ((char) *((char *) first_passwords+(index*2*(pass_size+1))+(pass_size+1)) != '\0' and (min_index < 0 or 
             strcmp((char *) first_passwords+(index*2*(pass_size+1))+(pass_size+1), 
                 (char *) first_passwords+(min_index*2*(pass_size+1))+(pass_size+1)) < 0)) {
-            std::cout << "index_min_element " << ((char*) first_passwords+(index*2*(pass_size+1))+(pass_size+1)) << std::endl;
+            std::cout << "index_min_element " << index << " = " << ((char*) first_passwords+(index*2*(pass_size+1))+(pass_size+1)) << std::endl;
             min_index = index;
         }
         ++index;
@@ -258,35 +261,31 @@ void generate_table(std::string output_file) {
 
     int index_pass = 0;
     int nbr_doublon = 0;
-    char* last_tail_password = "";
+    char* last_tail_password = (char *) malloc(pass_size+1);
     while (index_pass < nbr_pass) {
-        std::cout << "while " << index_pass << std::endl;
         int min_element = index_min_element(first_passwords, total_batch);
-        std::cout << "index min elem" << std::endl;
-        char* tail_password = *(*(first_passwords+(min_element*2*(pass_size+1))+(pass_size+1)));
-        std::cout << "Tail pass: " << tail_password << std::endl;
 
-        if (last_tail_password != tail_password) {
-            last_tail_password = tail_password;
-            result_table_file.write((char *) *(first_passwords+(min_element*2*(pass_size+1))), 2*(pass_size+1)*sizeof(char));
+        if (last_tail_password != ((char *) first_passwords+(min_element*2*(pass_size+1))+(pass_size+1))) {
+            memcpy(last_tail_password, first_passwords+(min_element*2*(pass_size+1))+(pass_size+1), pass_size+1);
+            result_table_file.write((char *) first_passwords+(min_element*2*(pass_size+1)), 2*(pass_size+1)*sizeof(char));
         } else {
             ++nbr_doublon;
         }
+        std::cout << "min_element: " << min_element << std::endl;
+        std::cout << "Read all first_passwords: " << ((char *) (first_passwords + (min_element*2*(pass_size+1)))) << std::endl;
 
         // Head
-        tmp_table_file[min_element].read((char *) *(*(first_passwords + (min_element*2*(pass_size+1)))), pass_size+1*sizeof(char));
+        tmp_table_file[min_element].read((char *) (first_passwords + (min_element*2*(pass_size+1))), pass_size+1*sizeof(char));
         // Tail
-        bool result = (bool) tmp_table_file[min_element].read((char *) *(*(first_passwords + (min_element*2*(pass_size+1)) + pass_size+1)), pass_size+1*sizeof(char));
+        bool result = (bool) tmp_table_file[min_element].read((char *) (first_passwords + (min_element*2*(pass_size+1)) + pass_size+1), pass_size+1*sizeof(char));
 
         // If we couldn't read the next element, file is finish
         if (!result) {
-            char* reset_head = *(*(first_passwords+(min_element*2*(pass_size+1))));
-            reset_head = (char *) '\0';
-            std::cout << "Reset: " << *(*(first_passwords+(min_element*2*(pass_size+1)))) << std::endl;
-            char* reset_tail = *(*(first_passwords+(min_element*2*(pass_size+1))+pass_size+1));
-            reset_tail = (char *) '\0';
-            // first_passwords[min_element][0][0] = '\0';
-            // first_passwords[min_element][1][0] = '\0';
+            *((char *) first_passwords+(min_element*2*(pass_size+1))) = '\0';
+            *((char *) first_passwords+(min_element*2*(pass_size+1))+pass_size+1) = '\0';
+        } else {
+            std::cout << "Read: " << (char *) (first_passwords + (min_element*2*(pass_size+1)) + pass_size+1) << std::endl;
+            std::cout << std::endl;
         }
         ++index_pass;
     }
@@ -389,7 +388,7 @@ int main(int argc, char *argv[]) {
     std::string file_name = "test_size";
 
     generate_table(file_name);
-    // read_all_table(file_name + ".txt");
+    read_all_table(file_name + ".txt");
 
     /*
     Genrated password: 16UutT
