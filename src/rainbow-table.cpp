@@ -16,7 +16,7 @@ const int DEFAULT_PASS_SIZE = 6; // Didn't include '\0' at the end
 const int pass_size = DEFAULT_PASS_SIZE;
 
 // Number of passwords in the rainbow table
-const int DEFAULT_NBR_PASS = 20;
+const int DEFAULT_NBR_PASS = 1000000;
 const int nbr_pass = DEFAULT_NBR_PASS;
 
 // Number of hash - reduce done before to have the tail
@@ -25,10 +25,11 @@ const int DEFAULT_NBR_LOOP = 3;
 const int nbr_loop = DEFAULT_NBR_LOOP;
 
 // Display some debug message
-const int DEBUG_LEVEL = 1; // 0 = no debug, 1 = some message, 2 = all message
+const int DEBUG_LEVEL = 0; // 0 = no debug, 1 = some message, 2 = all message
 
 // Max memore size used to store rainbow row
-const int MEMORY_SIZE = 9*((nbr_pass+1)*2); // Store 50 password per file
+const int MAX_ELEMENT_PER_BATCH = 200000;
+const int MEMORY_SIZE = MAX_ELEMENT_PER_BATCH*((nbr_pass+1)*2); // Store 100 password per file
 // Note, to have 1Go -> 1 000 000 000 char per file
 
 int sort_array (const void *a, const void *b) {
@@ -169,7 +170,7 @@ int index_min_element(char first_passwords[][2][pass_size+1], int total_password
 
 void generate_table(std::string output_file) {
 
-    int max_batch_elements = MEMORY_SIZE/(2*(pass_size+1));
+    int max_batch_elements = MAX_ELEMENT_PER_BATCH;
     if (DEBUG_LEVEL > 0) {
         std::cout << "Max number of element in a batch: " << max_batch_elements << std::endl;
     }
@@ -181,20 +182,26 @@ void generate_table(std::string output_file) {
     while (i < nbr_pass) {
         // Generate password
         std::string generate_password = rainbow::generate_passwd(pass_size);
-        if (DEBUG_LEVEL > 0) {
-            std::cout << "Genrated password: " << generate_password << std::endl;
+        if (DEBUG_LEVEL > 0 or i == nbr_pass/2) {
+            std::cout << "Generated password (" << i << "): " << generate_password << std::endl;
         }
 
         // Compute tail password        
         std::string computed_pass_tail = generate_password;
-        for (int i = 1; i <= nbr_loop; ++i) {
-            computed_pass_tail = reverse(i, sha256(computed_pass_tail), pass_size);
-            if (DEBUG_LEVEL > 1 and i != nbr_loop) {
+        for (int j = 1; j <= nbr_loop; ++j) {
+
+            if (i == nbr_pass/2) {
+                std::cout << "Display hash and password to made some tests" << std::endl;
+                std::cout << "pass: " << computed_pass_tail << " -> hash:" << sha256(computed_pass_tail) << std::endl;
+            }
+
+            computed_pass_tail = reverse(j, sha256(computed_pass_tail), pass_size);
+            if (DEBUG_LEVEL > 1 and j != nbr_loop) {
                 std::cout << "Computed intermediary password: " << computed_pass_tail << std::endl;
             }
         }
 
-        if (DEBUG_LEVEL > 0) {
+        if (DEBUG_LEVEL > 0 or i == nbr_pass/2) {
             std::cout << "Computed tail password: " << computed_pass_tail << std::endl;
             std::cout << std::endl; // Add space
         }
@@ -245,10 +252,18 @@ void generate_table(std::string output_file) {
     }
 
     int index_pass = 0;
+    int nbr_doublon = 0;
+    char* last_tail_password = "";
     while (index_pass < nbr_pass) {
         int min_element = index_min_element(first_passwords, total_batch);
+        char* tail_password = first_passwords[min_element][1];
 
-        result_table_file.write((char *) first_passwords[min_element], 2*(pass_size+1)*sizeof(char));
+        if (last_tail_password != tail_password) {
+            last_tail_password = tail_password;
+            result_table_file.write((char *) first_passwords[min_element], 2*(pass_size+1)*sizeof(char));
+        } else {
+            ++nbr_doublon;
+        }
 
         // Head
         tmp_table_file[min_element].read((char *) &first_passwords[min_element][0], pass_size+1*sizeof(char));
@@ -262,12 +277,16 @@ void generate_table(std::string output_file) {
         }
         ++index_pass;
     }
+    std::cout << nbr_doublon << "/" << nbr_pass << std::endl;
 
     for (int file_index = 0; file_index < total_batch; ++file_index) {
         // Close file
         tmp_table_file[file_index].close();
         // Delete file
         std::string file_name = output_file + std::to_string(file_index) + ".txt";
+        if (DEBUG_LEVEL > 0) {
+            std::cout << "Delete file: " << file_name << std::endl;
+        }
         remove(file_name.c_str());
     }
     result_table_file.close();
@@ -353,7 +372,7 @@ int main(int argc, char *argv[]) {
     // }
     // return 0;
 
-    std::string file_name = "result";
+    std::string file_name = "test_size";
 
     // generate_table(file_name);
     // read_all_table(file_name + ".txt");
@@ -371,7 +390,10 @@ int main(int argc, char *argv[]) {
     Computed tail password: nxDlmz
     */
 
-    std::string result = search_in_table(file_name + ".txt", "2f031890be64b43f79402106df0cb1787a32cd80733017cb65b95bdeab04a94a");
+
+    // TODO ne retourne pas le bon résultat !
+    // d0ab54c4fffe32871b1557d5d424f69391998b98253b3342d394cd29ef58ff5b
+    std::string result = search_in_table(file_name + ".txt", "d0ab54c4fffe32871b1557d5d424f69391998b98253b3342d394cd29ef58ff5b");
     std::cout << "Result: " << result << std::endl;
 
     return 0;
