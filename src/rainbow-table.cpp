@@ -25,7 +25,7 @@ const int DEFAULT_NBR_LOOP = 3;
 int nbr_loop = DEFAULT_NBR_LOOP;
 
 // Display some debug message
-const int DEBUG_LEVEL = 1; // 0 = no debug, 1 = some message, 2 = all message
+int debug_level = 0; // 0 = no debug, 1 = some message, 2 = all message
 
 // Max memore size used to store rainbow row
 const int MAX_ELEMENT_PER_BATCH = 10;
@@ -138,7 +138,7 @@ std::string search_in_table(std::string table_file_name, std::string hash_value)
 }
 
 void store_batch_in_file(char* batch_passwords, int nbr_password_in_batch, std::string output_file, 
-    int total_batch) {
+    std::size_t total_batch) {
 
     // Sort here
     qsort(batch_passwords, nbr_password_in_batch, 2*(pass_size+1)*sizeof(char), sort_array);
@@ -154,7 +154,7 @@ void store_batch_in_file(char* batch_passwords, int nbr_password_in_batch, std::
 
 // TODO optimise here.  Maybe sort directly when password are fetch (with a heap)
 // Method to have min element index in a sequence...
-int index_min_element(char*** first_passwords, int total_password) {
+int index_min_element(char*** first_passwords, std::size_t total_password) {
     std::size_t index = 0;
     int min_index = -1;
 
@@ -172,18 +172,18 @@ int index_min_element(char*** first_passwords, int total_password) {
 void generate_table(std::string output_file) {
 
     int max_batch_elements = MAX_ELEMENT_PER_BATCH;
-    if (DEBUG_LEVEL > 0) {
+    if (debug_level > 0) {
         std::cout << "Max number of element in a batch: " << max_batch_elements << std::endl;
     }
     char* batch_passwords = (char*) malloc(max_batch_elements*2*(pass_size+1));
 
     int i = 0;
     int current_batch = 0;
-    int total_batch = 0;
+    std::size_t total_batch = 0;
     while (i < nbr_pass) {
         // Generate password
         std::string generate_password = rainbow::generate_passwd(pass_size);
-        if (DEBUG_LEVEL > 0 or i == nbr_pass/2) {
+        if (debug_level > 0 or i == nbr_pass/2) {
             std::cout << "Generated password (" << i << "): " << generate_password << std::endl;
         }
 
@@ -197,12 +197,12 @@ void generate_table(std::string output_file) {
             }
 
             computed_pass_tail = reverse(j, sha256(computed_pass_tail), pass_size);
-            if (DEBUG_LEVEL > 1 and j != nbr_loop) {
+            if (debug_level > 1 and j != nbr_loop) {
                 std::cout << "Computed intermediary password: " << computed_pass_tail << std::endl;
             }
         }
 
-        if (DEBUG_LEVEL > 0 or i == nbr_pass/2) {
+        if (debug_level > 0 or i == nbr_pass/2) {
             std::cout << "Computed tail password: " << computed_pass_tail << std::endl;
             std::cout << std::endl; // Add space
         }
@@ -231,9 +231,9 @@ void generate_table(std::string output_file) {
     }
     free(batch_passwords);
 
-    if (DEBUG_LEVEL > 1) {
+    if (debug_level > 1) {
         std::cout << " === Read all files === " << std::endl;
-        for (int i = 0; i < total_batch; ++i) {
+        for (std::size_t i = 0; i < total_batch; ++i) {
             read_all_table(output_file + std::to_string(i) + ".txt");
         }
         std::cout << " ====================== " << std::endl;
@@ -245,7 +245,7 @@ void generate_table(std::string output_file) {
     // Open all file and read first pass head and tail
     char*** first_passwords = (char***) malloc(total_batch*2*(pass_size+1));
     std::ifstream tmp_table_file[total_batch];
-    for (int file_index = 0; file_index < total_batch; ++file_index) {
+    for (std::size_t file_index = 0; file_index < total_batch; ++file_index) {
         tmp_table_file[file_index] = std::ifstream(output_file + std::to_string(file_index) + ".txt", 
             std::ios::out | std::ios::binary);
 
@@ -285,12 +285,12 @@ void generate_table(std::string output_file) {
     std::cout << nbr_doublon << "/" << nbr_pass << std::endl;
     free(first_passwords);
 
-    for (int file_index = 0; file_index < total_batch; ++file_index) {
+    for (std::size_t file_index = 0; file_index < total_batch; ++file_index) {
         // Close file
         tmp_table_file[file_index].close();
         // Delete file
         std::string file_name = output_file + std::to_string(file_index) + ".txt";
-        if (DEBUG_LEVEL > 0) {
+        if (debug_level > 0) {
             std::cout << "Delete file: " << file_name << std::endl;
         }
         remove(file_name.c_str());
@@ -298,110 +298,161 @@ void generate_table(std::string output_file) {
     result_table_file.close();
 }
 
+void display_help(char* first_argument) {
+    std::cout << "Help to execute: " << first_argument << std::endl
+        << "\t-h\t\t\tDisplay this help" << std::endl
+        << "\t-d <level>\t\tSet debug level message (0 to disable)" << std::endl
+        << "\t-t <file name>\t\tGenerate table and store in file " << 
+            "(WITHOUT extention)" << std::endl
+        << "\t-p <size>\t\tSet password size (default: " << DEFAULT_PASS_SIZE << ")" << 
+            std::endl
+        << "\t-n <number>\t\tNumber of password to generate " << 
+            "(default: " << DEFAULT_NBR_PASS << ")" << std::endl
+        << "\t-l <number>\t\tNumber of hash/reduce (default: " << DEFAULT_NBR_LOOP << ")" << 
+            std::endl
+        << "\t-r <file name>\t\tRead table (used for debug)" << std::endl
+        << "\t-s <table file name>\tTry to find password of hash using the table passed " << 
+            "as a parameter (WITHOUT extention) (required '-f')" << std::endl
+        << "\t-f <hash file name>\tFile that contain hash that must be tested (required '-s')" << 
+            std::endl 
+        << "\t-o <file name>\tOutput name of results (required '-f' & '-s')" << std::endl;
+}
+
 
 int main(int argc, char *argv[]) {
 
-    // if (argc < 2) {
-    //     std::cout << "No operation specified" << std::endl;
-    // } else {
-    //     char* generate_table_name = "";
-    //     int nbr_loop = 10;
+    if (argc < 2) {
+        std::cout << "No operation specified" << std::endl;
+        display_help(argv[0]);
+    } else {
+        char* generate_table_name = NULL;
+        char* search_table_name = NULL;
+        char* hash_file_name = NULL;
+        char* output_file_name = "output.txt";
+        int nbr_loop = 10;
 
-    //     int param;
-    //     while ((param = getopt(argc, argv, "p:t:n:l:h")) != -1) {
-    //         switch (param) {
-    //             case 't':
-    //                 if (optarg) {
-    //                     generate_table_name = optarg;
-    //                     if (DEBUG_LEVEL > 0) {
-    //                         std::cout << "Generate table in file: " << generate_table_name << std::endl;
-    //                     }
-    //                 }
-    //                 break;
+        int param;
+        while ((param = getopt(argc, argv, "p:t:n:l:r:d:s:f:o:h")) != -1) {
+            switch (param) {
+                case 'd':
+                    if (optarg) {
+                        debug_level = std::atoi(optarg);
+                    }
+                    break;
 
-    //             case 'p':
-    //                 if (optarg) {
-    //                     // pass_size = std::atoi(optarg);
-    //                     if (DEBUG_LEVEL > 0) {
-    //                         std::cout << "Password size: " << pass_size << std::endl;
-    //                     }
-    //                 }
-    //                 break;
+                case 't':
+                    if (optarg) {
+                        generate_table_name = optarg;
+                        if (debug_level > 0) {
+                            std::cout << "Generate table in file: " << generate_table_name << std::endl;
+                        }
+                    }
+                    break;
 
-    //             case 'n':
-    //                 if(optarg) {
-    //                     // nbr_pass = std::atoi(optarg);
-    //                     if (DEBUG_LEVEL > 0) {
-    //                         std::cout << "Number of password that must be generated: " << nbr_pass << std::endl;
-    //                     }
-    //                 }
-    //                 break;
+                case 'p':
+                    if (optarg) {
+                        pass_size = std::atoi(optarg);
+                        if (debug_level > 0) {
+                            std::cout << "Password size: " << pass_size << std::endl;
+                        }
+                    }
+                    break;
 
-    //             case 'l':
-    //                 if(optarg) {
-    //                     // nbr_loop = std::atoi(optarg);
-    //                     if (DEBUG_LEVEL > 0) {
-    //                         std::cout << "Number of hash/reduce: " << nbr_loop << std::endl;
-    //                     }
-    //                 }
-    //                 break;
+                case 'n':
+                    if (optarg) {
+                        nbr_pass = std::atoi(optarg);
+                        if (debug_level > 0) {
+                            std::cout << "Number of password that must be generated: " << nbr_pass << std::endl;
+                        }
+                    }
+                    break;
 
-    //             case 'h':
-    //                 std::cout << "Help to execute: " << argv[0] << std::endl;
-    //                 std::cout << "\t-h\t\tDisplay this help" << std::endl;
-    //                 std::cout << "\t-t <file name>\tGenerate table and store in file" << std::endl;
-    //                 std::cout << "\t-p <size>\tSet password size (default: " << DEFAULT_PASS_SIZE << ")" << std::endl;
-    //                 std::cout << "\t-n <number>\tNumber of password to generate (default: " << DEFAULT_NBR_PASS << ")" << std::endl;
-    //                 std::cout << "\t-l <number>\tNumber of hash/reduce (default: " << DEFAULT_NBR_LOOP << ")" << std::endl;
-    //                 return 0;
+                case 'l':
+                    if (optarg) {
+                        nbr_loop = std::atoi(optarg);
+                        if (debug_level > 0) {
+                            std::cout << "Number of hash/reduce: " << nbr_loop << std::endl;
+                        }
+                    }
+                    break;
 
-    //             case '?':
-    //                 if (isprint(optopt))
-    //                   fprintf(stderr, "Unknown option `-%c'.\n", optopt);
-    //                 else
-    //                   fprintf(stderr, "Unknown option character `\\x%x'.\n", optopt);
-    //                 return 1;
+                case 'r':
+                    if (optarg) {
+                        read_all_table(optarg);
+                    }
+                    break;
 
-    //             default:
-    //                 std::cout << "No option define" << std::endl;
-    //         }
-    //     }
+                case 's':
+                    if (optarg) {
+                        search_table_name = optarg;
+                    }
+                    break;
 
-    //     for (int index = optind; index < argc; ++index) {
-    //         printf("Non-option argument %s\n", argv[index]);
-    //     }
+                case 'f':
+                    if (optarg) {
+                        hash_file_name = optarg;
+                    }
+                    break;
 
-    //     if (generate_table_name != "") {
-    //         generate_table(generate_table_name);
-    //     }
+                case 'o':
+                    if (optarg) {
+                        output_file_name = optarg;
+                    }
+                    break;
 
-    // }
-    // return 0;
+                case 'h':
+                    display_help(argv[0]);
+                    return 0;
 
-    std::string file_name = "test_size";
+                case '?':
+                    if (isprint(optopt)) {
+                        fprintf(stderr, "Unknown option `-%c'.\n", optopt);
+                    } else {
+                        fprintf(stderr, "Unknown option character `\\x%x'.\n", optopt);
+                    }
+                    return 1;
 
-    generate_table(file_name);
-    read_all_table(file_name + ".txt");
+                default:
+                    std::cout << "No option define" << std::endl;
+            }
+        }
 
-    /*
-    Genrated password: 16UutT
+        for (int index = optind; index < argc; ++index) {
+            printf("Non-option argument %s\n", argv[index]);
+        }
 
-    Compute hash: 387efcb493828b653163d832e584cc007cb226b364612812075e7c02b4a92741
-    Computed intermediary password: 99w68r
+        ///////////////////////////////
+        // GENERATE RAINBOW TABLE
+        if (generate_table_name != NULL) {
+            generate_table(generate_table_name);
+        }
 
-    Compute hash: 2f031890be64b43f79402106df0cb1787a32cd80733017cb65b95bdeab04a94a
-    Computed intermediary password: kr4jnz
+        ///////////////////////////////
+        // SEARCH PASS USING TABLE
+        // If search or hash is define (and not the other), display a warning
+        if ((search_table_name == NULL or hash_file_name == NULL) and 
+            search_table_name != hash_file_name) {
+            std::cout << "WARNING: you must define a file that contain hash (using '-f') that " << 
+                "must be search by the table (define in file '-s')" << std::endl;
+        } else if (search_table_name != NULL and hash_file_name != NULL) {
+            if (generate_table_name != NULL and search_table_name != generate_table_name) {
+                std::cout << "INFO: you generate a table in '" << generate_table_name << "' and " <<
+                    "you use another table to search ('" << search_table_name << "')" << std::endl;
+            }
 
-    Compute hash: f8a11b5a282a865bfe750f43bb55b5de345e1a7be9db184c238edbb4ace2e63b
-    Computed tail password: nxDlmz
-    */
+            std::ifstream hash_file(hash_file_name);
+            std::ofstream output_file(output_file_name);
+            std::string hash_str;
+            std::string result;
+            while (std::getline(hash_file, hash_str)) {
+                result = search_in_table(std::string(search_table_name) + ".txt", hash_str);
+                std::cout << "Result: " << result << std::endl;
+                output_file << result + "\n";
+            }
+            hash_file.close();
+            output_file.close();
+        }
 
-
-    // TODO ne retourne pas le bon résultat !
-    // d0ab54c4fffe32871b1557d5d424f69391998b98253b3342d394cd29ef58ff5b
-    // std::string result = search_in_table(file_name + ".txt", "d0ab54c4fffe32871b1557d5d424f69391998b98253b3342d394cd29ef58ff5b");
-    // std::cout << "Result: " << result << std::endl;
-
+    }
     return 0;
-
 }
