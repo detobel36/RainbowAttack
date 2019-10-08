@@ -21,11 +21,12 @@ test-pass: gen-passwd
 	./gen-passwd 5 6 6 test/generate_pass.txt test/generate_hash.txt
 	@echo "Next step is to generate the rainbow table"
 
-test-check: check-passwd
-	@echo "Must run the search"
+test-check: check-passwd rainbow-table
+	@echo "Run the search"
 	# Generate result in "test/results.txt"
+	./rainbow-table -s test_table -f test/generate_hash.txt -o test/results.txt
 	@echo "Check the results"
-	./check-passwd test/generate_pass.txt test/results.txt 
+	./check-passwd test/generate_pass.txt test/results.txt
 
 test: clean rainbow-table
 	./rainbow-table -h
