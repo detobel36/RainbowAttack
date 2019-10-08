@@ -1,12 +1,14 @@
 # Idées à implémenter/faire/essayer...
 - Fichier à accès aléatoire
-- Recherche en triant les tail et en faisant une recherche dicotomique
+- :heavy_check_mark: Recherche en triant les tail et en faisant une recherche dicotomique
 - Vérifier que la "reverse" fonction est bien répartie (actuellement cela ne semble pas le cas)
 
 # Questions
 - Pouvons-nous écrire ce que nous voulons dans le fichier stockant la rainbow table (un nombre au début)
-    - Est-ce que le fichier rainbow table doit pouvoir être "exporté" facilement ?  Et donc contenir la taille min-max des mot de passes, le nombre de mot de passe ect...
+    - Est-ce que le fichier rainbow table doit pouvoir être "exporté" facilement ?  Et donc contenir la taille min-max des mot de passes, le nombre de mot de passe ect...    
+   ===> Structure que l'on veut (donc on peut dire que 1 fichier est adapté seulement pour une taille de mdp)
 - Autorisation d'utiliser les librairies pour le tri ? (quicksort dans une lib, autre...)
+   ===> Oui mais il faut que ça s'installe (ubuntu/debian/linux de base)
 
 
 # TODO
@@ -15,6 +17,7 @@
     - Adapter pour pouvoir gérer des tailles de mots de passe variable (de 6 à 10 par exemple)
 - Passer d'un string à un binaire de manière plus efficace
 - Supprimer les mots de passe "en double".
+- Multi-thread la recherche (qui utilise la rainbowtable)
 
 
 ## Méthode de tri
