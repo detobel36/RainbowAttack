@@ -13,7 +13,7 @@
 
 // Size of passwords
 const int DEFAULT_PASS_SIZE = 6; // Didn't include '\0' at the end
-const int pass_size = DEFAULT_PASS_SIZE;
+int pass_size = DEFAULT_PASS_SIZE;
 
 // Number of passwords in the rainbow table
 const int DEFAULT_NBR_PASS = 20;
@@ -137,8 +137,8 @@ std::string search_in_table(std::string table_file_name, std::string hash_value)
     return "";
 }
 
-void store_batch_in_file(char batch_passwords[][2][pass_size+1], 
-        int nbr_password_in_batch, std::string output_file, int total_batch) {
+void store_batch_in_file(char* batch_passwords, int nbr_password_in_batch, std::string output_file, 
+    int total_batch) {
 
     // Sort here
     qsort(batch_passwords, nbr_password_in_batch, 2*(pass_size+1)*sizeof(char), sort_array);
@@ -146,7 +146,7 @@ void store_batch_in_file(char batch_passwords[][2][pass_size+1],
     // Create work file
     std::ofstream table_file(output_file + std::to_string(total_batch) + ".txt", std::ios::out | std::ios::binary);
     // Write to file
-    table_file.write((char *) batch_passwords, nbr_password_in_batch*2*(pass_size+1)*sizeof(char));
+    table_file.write(batch_passwords, nbr_password_in_batch*2*(pass_size+1)*sizeof(char));
     // Close file
     table_file.close();
 }
@@ -175,7 +175,7 @@ void generate_table(std::string output_file) {
     if (DEBUG_LEVEL > 0) {
         std::cout << "Max number of element in a batch: " << max_batch_elements << std::endl;
     }
-    char batch_passwords[max_batch_elements][2][pass_size+1];
+    char* batch_passwords = (char*) malloc(max_batch_elements*2*(pass_size+1));
 
     int i = 0;
     int current_batch = 0;
@@ -208,8 +208,10 @@ void generate_table(std::string output_file) {
         }
 
         // Create structure
-        std::strncpy(batch_passwords[current_batch][0], generate_password.c_str() + '\0', (pass_size+1)*sizeof(char));
-        std::strncpy(batch_passwords[current_batch][1], computed_pass_tail.c_str() + '\0', (pass_size+1)*sizeof(char));
+        std::strncpy((char*) (batch_passwords+(current_batch*2*(pass_size+1))), 
+            generate_password.c_str() + '\0', (pass_size+1)*sizeof(char));
+        std::strncpy((char*) (batch_passwords+(current_batch*2*(pass_size+1))+pass_size+1), 
+            computed_pass_tail.c_str() + '\0', (pass_size+1)*sizeof(char));
         ++current_batch;
 
         if (current_batch >= max_batch_elements) {
@@ -227,6 +229,7 @@ void generate_table(std::string output_file) {
         store_batch_in_file(batch_passwords, current_batch, output_file, total_batch);
         ++total_batch;
     }
+    free(batch_passwords);
 
     if (DEBUG_LEVEL > 1) {
         std::cout << " === Read all files === " << std::endl;
