@@ -28,8 +28,8 @@ int nbr_loop = DEFAULT_NBR_LOOP;
 int debug_level = 0; // 0 = no debug, 1 = some message, 2 = all message
 
 // Max memore size used to store rainbow row
-const int MAX_ELEMENT_PER_BATCH = 100000;
-const int MEMORY_SIZE = MAX_ELEMENT_PER_BATCH*((nbr_pass+1)*2); // Store 100 password per file
+// const int MAX_ELEMENT_PER_BATCH = nbr_pass/10;
+// const int MEMORY_SIZE = MAX_ELEMENT_PER_BATCH*((nbr_pass+1)*2); // Store 100 password per file
 // Note, to have 1Go -> 1 000 000 000 char per file
 
 int sort_array (const void *a, const void *b) {
@@ -171,7 +171,7 @@ int index_min_element(char*** first_passwords, std::size_t total_password) {
 
 void generate_table(std::string output_file) {
 
-    int max_batch_elements = MAX_ELEMENT_PER_BATCH;
+    int max_batch_elements = nbr_pass/10;
     if (debug_level > 0) {
         std::cout << "Max number of element in a batch: " << max_batch_elements << std::endl;
     }
