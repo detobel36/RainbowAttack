@@ -10,8 +10,12 @@ std::map<char,int> alpha_num_table;
 
 
 void prepare_table() {
-    for (int i = 0; i < rainbow::CHAR_POLICY.length(); ++i) {
-        alpha_num_table[rainbow::CHAR_POLICY[i]] = i;
+    char hash_possibility[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 
+                                'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 
+                                '1', '2', '3', '4', '5', '6', '7', '8', '9', '0'};
+
+    for (int i = 0; i < sizeof(hash_possibility); ++i) {
+        alpha_num_table[hash_possibility[i]] = i;
     }
 }
 
@@ -28,10 +32,11 @@ std::string reverse(long long index, std::string hash, int pass_size){
     int len_hash = hash.length();
 
     long long total_int = 0;
-    for (int i = 0; i < (pass_size+1); ++i) {
-        total_int += alpha_num_table.find(hash[i])->second;
+    for (int i = 0; i < pass_size+1; ++i) {
         total_int *= 36;
+        total_int += alpha_num_table.find(hash[i])->second;
     }
+    std::cout << "index: " << index << std::endl;
     total_int += index;
 
     for (int i = 0; i < pass_size; ++i) {

@@ -28,8 +28,15 @@ test-check: check-passwd rainbow-table
 	@echo "Check the results"
 	./check-passwd test/generate_pass.txt test/results.txt
 
-test: clean rainbow-table
-	./rainbow-table -h
+#test: clean rainbow-table
+#	./rainbow-table -h
+
+clean-test:
+	rm -f test-repartition
+
+test: clean-test
+	 g++ -o test-repartition -std=c++17 -Wall -Wextra src/sha256.cpp src/test-repartition.cpp
+	./test-repartition
 
 clean: clear
 
