@@ -420,6 +420,7 @@ int main(int argc, char *argv[]) {
         for (int index = optind; index < argc; ++index) {
             printf("Non-option argument %s\n", argv[index]);
         }
+        prepare_reverse_table();
 
         ///////////////////////////////
         // GENERATE RAINBOW TABLE
@@ -444,7 +445,17 @@ int main(int argc, char *argv[]) {
             std::ofstream output_file(output_file_name);
             std::string hash_str;
             std::string result;
+
+            if (debug_level > 0) {
+                std::cout << "Search password of hash contained in file " << 
+                    "'" << hash_file_name << "' using table " << 
+                    "'" << search_table_name << "'" << std::endl;
+            }
+
             while (std::getline(hash_file, hash_str)) {
+                if (debug_level > 0) {
+                    std::cout << "Try to find hash: " << hash_str << std::endl;
+                }
                 result = search_in_table(std::string(search_table_name) + ".txt", hash_str);
                 std::cout << "Result: " << result << std::endl;
                 output_file << result + "\n";
