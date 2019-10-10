@@ -36,10 +36,8 @@ int main(int argc, char *argv[]) {
     // }
     // std::cout << "total: " << total_encode << std::endl;
 
-
-
     int nbr_tests = 100000;
-    int pass_size = 6;
+    int pass_size = 10;
     int index = 0;
     std::map<char, int> counterDict;
 
@@ -47,9 +45,9 @@ int main(int argc, char *argv[]) {
         counterDict[rainbow::CHAR_POLICY[i]] = 0;
     }
 
-    prepare_table();
+    prepare_reverse_table();
 
-    std::string init_str = sha256("coucou");
+    std::string init_str = sha256("passwo");
     for (long long i = 0; i < nbr_tests; ++i) {
         // std::cout << i << " - " << init_str << std::endl;
         init_str = reverse(index++, sha256(init_str), pass_size);
@@ -59,10 +57,10 @@ int main(int argc, char *argv[]) {
         }
     }
 
-
     std::cout << "Result:" << std::endl;
     int max_value = 0;
     int min_value = nbr_tests;
+
     for (auto& x: counterDict){
         std::cout << "Character distribution: " << x.first << " - " << x.second <<  " <=> " << 
             x.second/(float(nbr_tests)*pass_size) << "%" << std::endl;
@@ -74,6 +72,7 @@ int main(int argc, char *argv[]) {
     }
     std::cout << std::endl;
     std::cout << "Min: " << min_value << " - Max: " << max_value << " (delta: " << (max_value - min_value) << ")" << std::endl;
+    std::cout << "Percent difference: " << (max_value/(float(nbr_tests)*pass_size)) - (min_value/(float(nbr_tests)*pass_size)) << std::endl;
 
 
     // int index = 0;
