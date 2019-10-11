@@ -8,6 +8,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include <chrono>
+
+
 #include "passwd-utils.hpp"
 #include "reverse.cpp"
 
@@ -109,17 +112,44 @@ std::string dichotomique_search(std::ifstream & file, int start, int end, std::s
 std::string search_in_table(std::string table_file_name, std::string hash_value) {
     std::ifstream table_file(table_file_name, std::ios::out | std::ios::binary);
 
+    double time_reverse = 0;
+    double time_search = 0;
+
     if (table_file) {
         int index_hash_reduce = nbr_loop;
         
+        auto start_reverse = std::chrono::high_resolution_clock::now();
         std::string compute_pass = reverse(index_hash_reduce, hash_value, pass_size);
+        auto finish_reverse = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed_revers = finish_reverse - start_reverse;
+        time_reverse += elapsed_revers.count();
+
+        auto start_loop = std::chrono::high_resolution_clock::now();
         while (index_hash_reduce >= 1) {
+            auto intermediary_loop = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> elapsed_intermediary = intermediary_loop - start_loop;
+            std::cout << "index_hash_reduce: " << index_hash_reduce << " (" << elapsed_intermediary.count() << ")" << std::endl;
+
+            auto start_search = std::chrono::high_resolution_clock::now();
             std::string pass_head = dichotomique_search(table_file, 0, nbr_pass, compute_pass);
+            auto finish_search = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> elapsed_search = finish_search - start_search;
+            time_search += elapsed_search.count();
+
             if (pass_head != "") {  // If we have found
+                std::cout << "Found" << std::endl;
                 for (int i = 1; i < index_hash_reduce; ++i) {
                     pass_head = reverse(i, sha256(pass_head), pass_size);
                 }
                 table_file.close();
+
+                auto finish_loop = std::chrono::high_resolution_clock::now();
+                std::chrono::duration<double> elapsed_loop = finish_loop - start_loop;
+                std::cout << "Total time: " << elapsed_loop.count() << std::endl;
+                std::cout << "Reverse: " << time_reverse << std::endl;
+                std::cout << "Search: " << time_search << std::endl;
+                std::cout << std::endl;
+
                 return pass_head;
             }
 
@@ -132,6 +162,14 @@ std::string search_in_table(std::string table_file_name, std::string hash_value)
                 }
             }
         }
+        std::cout << "Not found" << std::endl;
+        auto finish_loop = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed_loop = finish_loop - start_loop;
+        std::cout << "Total time: " << elapsed_loop.count() << std::endl;
+        std::cout << "Reverse: " << time_reverse << std::endl;
+        std::cout << "Search: " << time_search << std::endl;
+        std::cout << std::endl;
+
         table_file.close();
     }
     return "";
