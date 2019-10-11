@@ -16,20 +16,20 @@ const int DEFAULT_PASS_SIZE = 6; // Didn't include '\0' at the end
 int pass_size = DEFAULT_PASS_SIZE;
 
 // Number of passwords in the rainbow table
-const int DEFAULT_NBR_PASS = 20;
+const int DEFAULT_NBR_PASS = 1000000;
 int nbr_pass = DEFAULT_NBR_PASS;
 
 // Number of hash - reduce done before to have the tail
 // Warning: begin at 1 and end include "NBR_LOOP" (so [1, NBR_LOOP])
-const int DEFAULT_NBR_LOOP = 3;
+const int DEFAULT_NBR_LOOP = 50000;
 int nbr_loop = DEFAULT_NBR_LOOP;
 
 // Display some debug message
 int debug_level = 0; // 0 = no debug, 1 = some message, 2 = all message
 
 // Max memore size used to store rainbow row
-const int MAX_ELEMENT_PER_BATCH = 10;
-const int MEMORY_SIZE = MAX_ELEMENT_PER_BATCH*((nbr_pass+1)*2); // Store 100 password per file
+// const int MAX_ELEMENT_PER_BATCH = nbr_pass/10;
+// const int MEMORY_SIZE = MAX_ELEMENT_PER_BATCH*((nbr_pass+1)*2); // Store 100 password per file
 // Note, to have 1Go -> 1 000 000 000 char per file
 
 int sort_array (const void *a, const void *b) {
@@ -171,7 +171,7 @@ int index_min_element(char*** first_passwords, std::size_t total_password) {
 
 void generate_table(std::string output_file) {
 
-    int max_batch_elements = MAX_ELEMENT_PER_BATCH;
+    int max_batch_elements = nbr_pass/10;
     if (debug_level > 0) {
         std::cout << "Max number of element in a batch: " << max_batch_elements << std::endl;
     }
@@ -420,6 +420,7 @@ int main(int argc, char *argv[]) {
         for (int index = optind; index < argc; ++index) {
             printf("Non-option argument %s\n", argv[index]);
         }
+        prepare_reverse_table();
 
         ///////////////////////////////
         // GENERATE RAINBOW TABLE
@@ -444,7 +445,17 @@ int main(int argc, char *argv[]) {
             std::ofstream output_file(output_file_name);
             std::string hash_str;
             std::string result;
+
+            if (debug_level > 0) {
+                std::cout << "Search password of hash contained in file " << 
+                    "'" << hash_file_name << "' using table " << 
+                    "'" << search_table_name << "'" << std::endl;
+            }
+
             while (std::getline(hash_file, hash_str)) {
+                if (debug_level > 0) {
+                    std::cout << "Try to find hash: " << hash_str << std::endl;
+                }
                 result = search_in_table(std::string(search_table_name) + ".txt", hash_str);
                 std::cout << "Result: " << result << std::endl;
                 output_file << result + "\n";

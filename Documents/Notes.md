@@ -20,6 +20,17 @@
 - Multi-thread la recherche (qui utilise la rainbowtable)
 
 
+## Méthode reduce
+La fonction de hashage envoie sur toutes les lettres et tous les chiffres: [a-z0-9]. Ce qui correspond à 26 lettres et 10 chiffres, ce qui donne 36 possibilités. Les mots de passes utilisés ici sont composés de 62 caractères.   
+On ne peut donc pas faire une correspondance 1 <-> 1.  Il est par contre envisageable de faire une correspondance 2 <-> 1.  Avec deux caractères du hash, il sera possible de choisir une nouvelle valeur.  
+
+Pour le hash suivant:
+```
+d0ab54c4fffe32871b1557d5d424f69391998b98253b3342d394cd29ef58ff5b
+```
+Il est possible de transformer `d0` en un nombre.  Il faut convertir `d` en entier qui sera multiplié par 36 et additionné a la valeur de `0`. L'index de la fonction de réduction pourra être ajouté et enfin, un modulo permettant de revenir dans l'ensemble des caractères possibles pour les mots de passe que l'on veut générer.
+
+
 ## Méthode de tri
 
 Il n'est pas possible de trier directement tous les mot de passes "tail".  Ils ne rentrent pas tous dans la mémoire (max 12Go).   
