@@ -19,6 +19,26 @@
 - Supprimer les mots de passe "en double".
 - Multi-thread la recherche (qui utilise la rainbowtable)
 
+## Fonctionnement de la recherche
+
+Imaginons un cas avec 3 "colonnes".        
+
+**Tableau**
+```
+HEAD                                                                                         TAIL
+pass1_0  -H->  hash1_1  -R1->  pass1_1  -H->  hash1_2  -R2->  pass1_2  -H->  hash1_3  -R3->  pass1_3
+pass2_0  -H->  hash2_1  -R1->  pass2_1  -H->  hash2_2  -R2->  pass2_2  -H->  hash2_3  -R3->  pass2_3
+```
+Si l'on a `pass1_1` en entré.   
+
+- **1** On recherche dans les tail. -> Pas trouvé   
+- **2** On applique R3 à H(`pass1_1`) = `pass1_1'` (il pourrait être comparable à `pass?_2`) -> Pas trouvé   
+- **3** On applique R3(H(R2(`pass1_1`))) = `pass1_1` -> Trouvé   
+
+Cela signifie que le résultat de l'étape 2 ne peut pas être utilisé pour l'étape 3 et inversement.      
+Pour 50k colonnes.  Si le résultat que l'on cherche se trouve dans la "première" colonne, il faudra appliquer 50k fois hash - reduce.  Et l'étape précédente 49 999 fois. Ce qui correspond à la `\sum_{i=0}^{50k}(i)`.
+
+
 
 ## Méthode reduce
 La fonction de hashage envoie sur toutes les lettres et tous les chiffres: [a-z0-9]. Ce qui correspond à 26 lettres et 10 chiffres, ce qui donne 36 possibilités. Les mots de passes utilisés ici sont composés de 62 caractères.   
