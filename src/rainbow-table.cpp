@@ -19,8 +19,8 @@ const int DEFAULT_PASS_SIZE = 6; // Didn't include '\0' at the end
 int pass_size = DEFAULT_PASS_SIZE;
 
 // Number of passwords in the rainbow table
-const int DEFAULT_NBR_PASS = 1000000;
-int nbr_pass = DEFAULT_NBR_PASS;
+const long long DEFAULT_NBR_PASS = 1000000;
+long long nbr_pass = DEFAULT_NBR_PASS;
 
 // Number of hash - reduce done before to have the tail
 // Warning: begin at 1 and end include "NBR_LOOP" (so [1, NBR_LOOP])
@@ -398,7 +398,7 @@ int main(int argc, char *argv[]) {
 
                 case 'n':
                     if (optarg) {
-                        nbr_pass = std::atoi(optarg);
+                        nbr_pass = std::atoll(optarg);
                         if (debug_level > 0) {
                             std::cout << "Number of password that must be generated: " << nbr_pass << std::endl;
                         }
