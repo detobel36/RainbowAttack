@@ -25,9 +25,9 @@ Imaginons un cas avec 3 "colonnes".
 
 *Tableau*
 ```
-HEAD                                                                 TAIL
-pass1_0 -H-> hash1_1 -R1-> pass1_1 -H-> hash1_2 -R2-> pass1_2 -H-> hash1_3 -R3-> pass1_3
-pass2_0 -H-> hash2_1 -R1-> pass2_1 -H-> hash2_2 -R2-> pass2_2 -H-> hash2_3 -R3-> pass2_3
+HEAD                                                                                         TAIL
+pass1_0  -H->  hash1_1  -R1->  pass1_1  -H->  hash1_2  -R2->  pass1_2  -H->  hash1_3  -R3->  pass1_3
+pass2_0  -H->  hash2_1  -R1->  pass2_1  -H->  hash2_2  -R2->  pass2_2  -H->  hash2_3  -R3->  pass2_3
 ```
 Si l'on a `pass1_1` en entré.   
 
