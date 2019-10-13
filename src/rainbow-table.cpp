@@ -3,7 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
-
+#include <thread>
 #include <ctype.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -19,11 +19,13 @@ int pass_size = DEFAULT_PASS_SIZE;
 const long long DEFAULT_NBR_PASS = 1000000;
 long long nbr_pass = DEFAULT_NBR_PASS;
 
+const int DEFAULT_THREAD_NBR = 4;
+int threads_number = DEFAULT_THREAD_NBR;
+
 // Number of hash - reduce done before to have the tail
 // Warning: begin at 1 and end include "NBR_LOOP" (so [1, NBR_LOOP])
 const int DEFAULT_NBR_LOOP = 5000;
 int nbr_loop = DEFAULT_NBR_LOOP;
-
 // Display some debug message
 int debug_level = 0; // 0 = no debug, 1 = some message, 2 = all message
 
@@ -159,10 +161,15 @@ int index_min_element(char*** first_passwords, std::size_t total_password) {
     int min_index = -1;
 
     while (index < total_password) {
+        //std::cout<<"item1: "<<(char *) (first_passwords+(index*2*(pass_size+1))+(pass_size+1))<<std::endl;
+        //std::cout<<"got item1"<<std::endl;
+        //std::cout<<"item2: "<<(char *) (first_passwords+(min_index*2*(pass_size+1))+(pass_size+1))<<std::endl;
+        //std::cout<<"got item2"<<std::endl;
         if ((char) *((char *) (first_passwords+(index*2*(pass_size+1))+(pass_size+1))) != '\0' and (min_index < 0 or 
             strcmp((char *) (first_passwords+(index*2*(pass_size+1))+(pass_size+1)), 
                 (char *) (first_passwords+(min_index*2*(pass_size+1))+(pass_size+1))) < 0)) {
             min_index = index;
+            //std::cout<<"min_index: "<<min_index<<std::endl;
         }
         ++index;
     }
@@ -170,7 +177,7 @@ int index_min_element(char*** first_passwords, std::size_t total_password) {
 }
 
 void generate_table(std::string output_file, int nbr_loop) {
-    int max_batch_elements = nbr_pass/10;
+    int max_batch_elements = nbr_pass/threads_number;
     if (debug_level > 0) {
         std::cout << "Max number of element in a batch: " << max_batch_elements << std::endl;
     }
@@ -179,7 +186,7 @@ void generate_table(std::string output_file, int nbr_loop) {
     int i = 0;
     int current_batch = 0;
     std::size_t total_batch = 0;
-    while (i < nbr_pass) {
+    while (i < max_batch_elements) {
         // Generate password
         std::string generate_password = rainbow::generate_passwd(pass_size);
         if (debug_level > 0 or i == nbr_pass/2) {
@@ -191,7 +198,7 @@ void generate_table(std::string output_file, int nbr_loop) {
         for (int j = 1; j <= nbr_loop; ++j) {
 
             if (debug_level > 1 and i == nbr_pass/2) {
-                std::cout << "Display hash and password to made some tests" << std::endl;
+                std::cout << "Display hash and password to make some tests" << std::endl;
                 std::cout << j << ". pass: " << computed_pass_tail << " -> hash:" << sha256(computed_pass_tail) << std::endl;
             }
 
@@ -212,39 +219,22 @@ void generate_table(std::string output_file, int nbr_loop) {
         std::strncpy((char*) (batch_passwords+(current_batch*2*(pass_size+1))+pass_size+1), 
             computed_pass_tail.c_str() + '\0', (pass_size+1)*sizeof(char));
         ++current_batch;
-
-        if (current_batch >= max_batch_elements) {
-            store_batch_in_file(batch_passwords, current_batch, output_file, total_batch);
-            // Reset batch information
-            ++total_batch;
-            current_batch = 0;
-        }
-
         ++i;
     }
-
-    // Save last batch
-    if (current_batch > 0) {
-        store_batch_in_file(batch_passwords, current_batch, output_file, total_batch);
-        ++total_batch;
-    }
+    // Save  batch in file
+    store_batch_in_file(batch_passwords, current_batch, output_file, batchId);
+    ++total_batch;
     free(batch_passwords);
+}
 
-    if (debug_level > 1) {
-        std::cout << " === Read all files === " << std::endl;
-        for (std::size_t i = 0; i < total_batch; ++i) {
-            read_all_table(output_file + std::to_string(i) + ".txt");
-        }
-        std::cout << " ====================== " << std::endl;
-    }
-
-    // Open result file
+void merge_tables(std::string output_file, int total_batch){
     std::ofstream result_table_file(output_file + ".txt", std::ios::out | std::ios::binary);
     
     // Open all file and read first pass head and tail
     char*** first_passwords = (char***) malloc(total_batch*2*(pass_size+1));
     std::ifstream tmp_table_file[total_batch];
     for (std::size_t file_index = 0; file_index < total_batch; ++file_index) {
+        //std::cout<<"Merging file "<<output_file+std::to_string(file_index)+".txt"<<std::endl;
         tmp_table_file[file_index] = std::ifstream(output_file + std::to_string(file_index) + ".txt", 
             std::ios::out | std::ios::binary);
 
@@ -260,7 +250,6 @@ void generate_table(std::string output_file, int nbr_loop) {
     while (index_pass < nbr_pass) {
 
         int min_element = index_min_element(first_passwords, total_batch);
-
         if (last_tail_password != ((char *) first_passwords+(min_element*2*(pass_size+1))+(pass_size+1))) {
             memcpy(last_tail_password, first_passwords+(min_element*2*(pass_size+1))+(pass_size+1), pass_size+1);
             result_table_file.write((char *) (first_passwords+(min_element*2*(pass_size+1))), (pass_size+1)*sizeof(char));
@@ -268,7 +257,6 @@ void generate_table(std::string output_file, int nbr_loop) {
         } else {
             ++nbr_doublon;
         }
-
         // Head
         tmp_table_file[min_element].read((char *) (first_passwords + (min_element*2*(pass_size+1))), (pass_size+1)*sizeof(char));
         // Tail
@@ -294,13 +282,31 @@ void generate_table(std::string output_file, int nbr_loop) {
         }
         remove(file_name.c_str());
     }
+
     result_table_file.close();
 }
+
+void launch_thread_gen(std::string output_file) {
+    std::thread thread_array[threads_number];
+    int max_batch_elements = nbr_pass/threads_number;
+    for (int i = 0; i < threads_number; ++i) {
+        std::cout<<"Thread "<<i<<" started."<<std::endl;
+        thread_array[i] = std::thread(generate_table,output_file,i);
+    }
+    for (int j = 0; j < threads_number; ++j) {
+        thread_array[j].join();
+        std::cout<<"Thread "<<j<<" ended."<<std::endl;
+    }
+    // Make result file
+    merge_tables(output_file,threads_number);
+}
+
 
 void display_help(char* first_argument) {
     std::cout << "Help to execute: " << first_argument << std::endl
         << "\t-h\t\t\tDisplay this help" << std::endl
         << "\t-d <level>\t\tSet debug level message (0 to disable)" << std::endl
+        << "\t-c <thread count>\tSet thread count to be used (force the size of batch)" << std::endl
         << "\t-t <file name>\t\tGenerate table and store in file " << 
             "(WITHOUT extention)" << std::endl
         << "\t-p <size>\t\tSet password size (default: " << DEFAULT_PASS_SIZE << ")" << 
@@ -331,7 +337,7 @@ int main(int argc, char *argv[]) {
         int nbr_loop = 10;
 
         int param;
-        while ((param = getopt(argc, argv, "p:t:n:l:r:d:s:f:o:h")) != -1) {
+        while ((param = getopt(argc, argv, "p:t:n:l:r:d:s:f:o:c:h:")) != -1) {
             switch (param) {
                 case 'd':
                     if (optarg) {
@@ -371,6 +377,15 @@ int main(int argc, char *argv[]) {
                         nbr_loop = std::atoi(optarg);
                         if (debug_level > 0) {
                             std::cout << "Number of hash/reduce: " << nbr_loop << std::endl;
+                        }
+                    }
+                    break;
+
+                case 'c':
+                    if (optarg) {
+                        threads_number = std::atoi(optarg);
+                        if (debug_level > 0) {
+                            std::cout << "Number of threads to be used: " << threads_number << std::endl;
                         }
                     }
                     break;
@@ -424,7 +439,8 @@ int main(int argc, char *argv[]) {
         ///////////////////////////////
         // GENERATE RAINBOW TABLE
         if (generate_table_name != NULL) {
-            generate_table(generate_table_name, nbr_loop);
+            //generate_table(generate_table_name);
+            launch_thread_gen(generate_table_name);
         }
 
         ///////////////////////////////
