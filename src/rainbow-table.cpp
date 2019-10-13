@@ -19,11 +19,13 @@ int pass_size = DEFAULT_PASS_SIZE;
 const int DEFAULT_NBR_PASS = 1000000;
 int nbr_pass = DEFAULT_NBR_PASS;
 
+const int DEFAULT_THREAD_NBR = 4;
+int threads_number = DEFAULT_THREAD_NBR;
+
 // Number of hash - reduce done before to have the tail
 // Warning: begin at 1 and end include "NBR_LOOP" (so [1, NBR_LOOP])
 const int DEFAULT_NBR_LOOP = 50000;
 int nbr_loop = DEFAULT_NBR_LOOP;
-int threads_number = 4;
 // Display some debug message
 int debug_level = 0; // 0 = no debug, 1 = some message, 2 = all message
 
@@ -304,6 +306,7 @@ void launch_thread_gen(std::string output_file){
 void display_help(char* first_argument) {
     std::cout << "Help to execute: " << first_argument << std::endl
         << "\t-h\t\t\tDisplay this help" << std::endl
+        << "\t-c <thread count>\tSet thread count to be used" << std::endl
         << "\t-d <level>\t\tSet debug level message (0 to disable)" << std::endl
         << "\t-t <file name>\t\tGenerate table and store in file " << 
             "(WITHOUT extention)" << std::endl
@@ -335,7 +338,7 @@ int main(int argc, char *argv[]) {
         int nbr_loop = 10;
 
         int param;
-        while ((param = getopt(argc, argv, "p:t:n:l:r:d:s:f:o:h")) != -1) {
+        while ((param = getopt(argc, argv, "p:t:n:l:r:d:s:f:o:c:h:")) != -1) {
             switch (param) {
                 case 'd':
                     if (optarg) {
@@ -375,6 +378,15 @@ int main(int argc, char *argv[]) {
                         nbr_loop = std::atoi(optarg);
                         if (debug_level > 0) {
                             std::cout << "Number of hash/reduce: " << nbr_loop << std::endl;
+                        }
+                    }
+                    break;
+
+                case 'c':
+                    if (optarg) {
+                        threads_number = std::atoi(optarg);
+                        if (debug_level > 0) {
+                            std::cout << "Number of threads to be used: " << threads_number << std::endl;
                         }
                     }
                     break;
