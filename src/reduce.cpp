@@ -9,7 +9,7 @@
 std::map<char,int> alpha_num_table;
 int nbr_char_policy;
 
-void prepare_reverse_table() {
+void prepare_reduce_table() {
     char hash_possibility[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 
                                 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 
                                 '1', '2', '3', '4', '5', '6', '7', '8', '9', '0'};
@@ -22,7 +22,7 @@ void prepare_reverse_table() {
 }
 
 
-std::string reverse(long long index, std::string hash, int pass_size){
+std::string reduce(long long index, std::string hash, int pass_size){
     std::string result_password = "";
 
     unsigned long long int total_int = 0;

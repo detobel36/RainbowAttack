@@ -9,7 +9,7 @@
 #include <unistd.h>
 
 #include "passwd-utils.hpp"
-#include "reverse.cpp"
+#include "reduce.cpp"
 
 // Size of passwords
 const int DEFAULT_PASS_SIZE = 6; // Didn't include '\0' at the end
@@ -112,12 +112,12 @@ std::string search_in_table(std::string table_file_name, std::string hash_value)
     if (table_file) {
         int index_hash_reduce = nbr_loop;
         
-        std::string compute_pass = reverse(index_hash_reduce, hash_value, pass_size);
+        std::string compute_pass = reduce(index_hash_reduce, hash_value, pass_size);
         while (index_hash_reduce >= 1) {
             std::string pass_head = dichotomique_search(table_file, 0, nbr_pass, compute_pass);
             if (pass_head != "") {  // If we have found
                 for (int i = 1; i < index_hash_reduce; ++i) {
-                    pass_head = reverse(i, sha256(pass_head), pass_size);
+                    pass_head = reduce(i, sha256(pass_head), pass_size);
                 }
                 table_file.close();
                 return pass_head;
@@ -126,9 +126,9 @@ std::string search_in_table(std::string table_file_name, std::string hash_value)
             // Else, compute new password
             --index_hash_reduce;
             if (index_hash_reduce > 0) {
-                compute_pass = reverse(index_hash_reduce, hash_value, pass_size);
+                compute_pass = reduce(index_hash_reduce, hash_value, pass_size);
                 for (int i = index_hash_reduce+1; i <= nbr_loop; ++i) {
-                    compute_pass = reverse(i, sha256(compute_pass), pass_size);
+                    compute_pass = reduce(i, sha256(compute_pass), pass_size);
                 }
             }
         }
@@ -195,7 +195,7 @@ void generate_table(std::string output_file, int nbr_loop) {
                 std::cout << j << ". pass: " << computed_pass_tail << " -> hash:" << sha256(computed_pass_tail) << std::endl;
             }
 
-            computed_pass_tail = reverse(j, sha256(computed_pass_tail), pass_size);
+            computed_pass_tail = reduce(j, sha256(computed_pass_tail), pass_size);
             if (debug_level > 1 and j != nbr_loop) {
                 std::cout << "Computed intermediary password: " << computed_pass_tail << std::endl;
             }
@@ -419,7 +419,7 @@ int main(int argc, char *argv[]) {
         for (int index = optind; index < argc; ++index) {
             printf("Non-option argument %s\n", argv[index]);
         }
-        prepare_reverse_table();
+        prepare_reduce_table();
 
         ///////////////////////////////
         // GENERATE RAINBOW TABLE

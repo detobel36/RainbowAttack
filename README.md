@@ -1,6 +1,7 @@
 # RainbowAttack
 Homework for Secure software development and web security
 
+By Rémy Détobel - 000408013 and Grigore Antoniuc - 000411411
 
 ## File structure
 - [src](src) 
