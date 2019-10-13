@@ -29,11 +29,12 @@ HEAD                                                                            
 pass1_0  -H->  hash1_1  -R1->  pass1_1  -H->  hash1_2  -R2->  pass1_2  -H->  hash1_3  -R3->  pass1_3
 pass2_0  -H->  hash2_1  -R1->  pass2_1  -H->  hash2_2  -R2->  pass2_2  -H->  hash2_3  -R3->  pass2_3
 ```
-Si l'on a `pass1_1` en entré.   
+Si l'on a `hash1_1` en entré.   
 
 - **1** On recherche dans les tail. -> Pas trouvé   
-- **2** On applique R3 à H(`pass1_1`) = `pass1_1'` (il pourrait être comparable à `pass?_2`) -> Pas trouvé   
-- **3** On applique R3(H(R2(`pass1_1`))) = `pass1_1` -> Trouvé   
+- **2** On applique R3 à `hash1_1` = `pass1_1'` -> Pas trouvé   
+- **3** On applique R3(H(R2(`hash1_1`))) = `pass1_1''` -> Pas Trouvé   
+- **4** On applique R3(H(R2(H(R1(`hash1_1`))))) = `pass1_3` -> Trouvé     
 
 Cela signifie que le résultat de l'étape 2 ne peut pas être utilisé pour l'étape 3 et inversement.      
 Pour 50k colonnes.  Si le résultat que l'on cherche se trouve dans la "première" colonne, il faudra appliquer 50k fois hash - reduce.  Et l'étape précédente 49 999 fois. Ce qui correspond à la `\sum_{i=0}^{50k}(i)`.
