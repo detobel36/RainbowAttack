@@ -16,15 +16,15 @@ const int DEFAULT_PASS_SIZE = 6; // Didn't include '\0' at the end
 int pass_size = DEFAULT_PASS_SIZE;
 
 // Number of passwords in the rainbow table
-const int DEFAULT_NBR_PASS = 1000000;
-int nbr_pass = DEFAULT_NBR_PASS;
+const long long DEFAULT_NBR_PASS = 1000000;
+long long nbr_pass = DEFAULT_NBR_PASS;
 
 const int DEFAULT_THREAD_NBR = 4;
 int threads_number = DEFAULT_THREAD_NBR;
 
 // Number of hash - reduce done before to have the tail
 // Warning: begin at 1 and end include "NBR_LOOP" (so [1, NBR_LOOP])
-const int DEFAULT_NBR_LOOP = 50000;
+const int DEFAULT_NBR_LOOP = 5000;
 int nbr_loop = DEFAULT_NBR_LOOP;
 // Display some debug message
 int debug_level = 0; // 0 = no debug, 1 = some message, 2 = all message
@@ -176,8 +176,7 @@ int index_min_element(char*** first_passwords, std::size_t total_password) {
     return min_index;
 }
 
-void generate_table(std::string output_file,int batchId) {
-
+void generate_table(std::string output_file, int nbr_loop) {
     int max_batch_elements = nbr_pass/threads_number;
     if (debug_level > 0) {
         std::cout << "Max number of element in a batch: " << max_batch_elements << std::endl;
@@ -198,9 +197,9 @@ void generate_table(std::string output_file,int batchId) {
         std::string computed_pass_tail = generate_password;
         for (int j = 1; j <= nbr_loop; ++j) {
 
-            if (i == nbr_pass/2) {
+            if (debug_level > 1 and i == nbr_pass/2) {
                 std::cout << "Display hash and password to make some tests" << std::endl;
-                std::cout << "pass: " << computed_pass_tail << " -> hash:" << sha256(computed_pass_tail) << std::endl;
+                std::cout << j << ". pass: " << computed_pass_tail << " -> hash:" << sha256(computed_pass_tail) << std::endl;
             }
 
             computed_pass_tail = reverse(j, sha256(computed_pass_tail), pass_size);
@@ -287,14 +286,14 @@ void merge_tables(std::string output_file, int total_batch){
     result_table_file.close();
 }
 
-void launch_thread_gen(std::string output_file){
+void launch_thread_gen(std::string output_file) {
     std::thread thread_array[threads_number];
     int max_batch_elements = nbr_pass/threads_number;
-    for(int i=0; i<threads_number; i++){
+    for (int i = 0; i < threads_number; ++i) {
         std::cout<<"Thread "<<i<<" started."<<std::endl;
         thread_array[i] = std::thread(generate_table,output_file,i);
     }
-    for(int j=0; j<threads_number; j++){
+    for (int j = 0; j < threads_number; ++j) {
         thread_array[j].join();
         std::cout<<"Thread "<<j<<" ended."<<std::endl;
     }
@@ -306,8 +305,8 @@ void launch_thread_gen(std::string output_file){
 void display_help(char* first_argument) {
     std::cout << "Help to execute: " << first_argument << std::endl
         << "\t-h\t\t\tDisplay this help" << std::endl
-        << "\t-c <thread count>\tSet thread count to be used" << std::endl
         << "\t-d <level>\t\tSet debug level message (0 to disable)" << std::endl
+        << "\t-c <thread count>\tSet thread count to be used (force the size of batch)" << std::endl
         << "\t-t <file name>\t\tGenerate table and store in file " << 
             "(WITHOUT extention)" << std::endl
         << "\t-p <size>\t\tSet password size (default: " << DEFAULT_PASS_SIZE << ")" << 
@@ -366,7 +365,7 @@ int main(int argc, char *argv[]) {
 
                 case 'n':
                     if (optarg) {
-                        nbr_pass = std::atoi(optarg);
+                        nbr_pass = std::atoll(optarg);
                         if (debug_level > 0) {
                             std::cout << "Number of password that must be generated: " << nbr_pass << std::endl;
                         }
