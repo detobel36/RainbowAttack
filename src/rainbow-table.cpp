@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <chrono>
+#include <ctime>
 
 
 #include "passwd-utils.hpp"
@@ -35,7 +35,12 @@ int debug_level = 0; // 0 = no debug, 1 = some message, 2 = all message
 // const int MEMORY_SIZE = MAX_ELEMENT_PER_BATCH*((nbr_pass+1)*2); // Store 100 password per file
 // Note, to have 1Go -> 1 000 000 000 char per file
 
-int sort_array (const void *a, const void *b) {
+void display_timer(std::string timer_name, std::clock_t timer) {
+    std::cout << "Time to execute " << timer_name << ": " << 
+        (std::clock() - timer) / (double)(CLOCKS_PER_SEC / 1000) << std::endl;
+}
+
+int sort_array(const void *a, const void *b) {
     // TODO optimise here
 
     // Get the first element and must sort based on the second
@@ -105,71 +110,62 @@ std::string dichotomique_search(std::ifstream & file, int start, int end, std::s
     }
 }
 
+double exec_dichotomique;
+long nbr_execution_dichotomique = 0;
+
+double exec_reverse;
+long nbr_execution_reverse = 0;
+
 // Search in the table a specific hash to get the password
 // Input: the table file name and the hash that need to be found
 // Output: the password (which gives the hash_value passed as a parameter when it is hash) or NULL 
 // if not found
 std::string search_in_table(std::string table_file_name, std::string hash_value) {
     std::ifstream table_file(table_file_name, std::ios::out | std::ios::binary);
-
-    double time_reverse = 0;
-    double time_search = 0;
-
     if (table_file) {
         int index_hash_reduce = nbr_loop;
         
-        auto start_reverse = std::chrono::high_resolution_clock::now();
+        std::clock_t start_reverse_one = std::clock();
         std::string compute_pass = reverse(index_hash_reduce, hash_value, pass_size);
-        auto finish_reverse = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> elapsed_revers = finish_reverse - start_reverse;
-        time_reverse += elapsed_revers.count();
-
-        auto start_loop = std::chrono::high_resolution_clock::now();
+        exec_reverse += (std::clock() - start_reverse_one) / (double)(CLOCKS_PER_SEC / 1000);
+        ++nbr_execution_reverse;
         while (index_hash_reduce >= 1) {
-            auto intermediary_loop = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<double> elapsed_intermediary = intermediary_loop - start_loop;
-            std::cout << "index_hash_reduce: " << index_hash_reduce << " (" << elapsed_intermediary.count() << ")" << std::endl;
+            if (debug_level > 1) {
+                std::cout << "Search for " << index_hash_reduce << std::endl;
+            }
 
-            auto start_search = std::chrono::high_resolution_clock::now();
+            std::clock_t start_dichotomique = std::clock();
             std::string pass_head = dichotomique_search(table_file, 0, nbr_pass, compute_pass);
-            auto finish_search = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<double> elapsed_search = finish_search - start_search;
-            time_search += elapsed_search.count();
+            exec_dichotomique += (std::clock() - start_dichotomique) / (double)(CLOCKS_PER_SEC / 1000);
+            ++nbr_execution_dichotomique;
 
             if (pass_head != "") {  // If we have found
                 std::cout << "Found" << std::endl;
                 for (int i = 1; i < index_hash_reduce; ++i) {
+                    std::clock_t start_reverse_two = std::clock();
                     pass_head = reverse(i, sha256(pass_head), pass_size);
+                    exec_reverse += (std::clock() - start_reverse_two) / (double)(CLOCKS_PER_SEC / 1000);
+                    ++nbr_execution_reverse;
                 }
                 table_file.close();
-
-                auto finish_loop = std::chrono::high_resolution_clock::now();
-                std::chrono::duration<double> elapsed_loop = finish_loop - start_loop;
-                std::cout << "Total time: " << elapsed_loop.count() << std::endl;
-                std::cout << "Reverse: " << time_reverse << std::endl;
-                std::cout << "Search: " << time_search << std::endl;
-                std::cout << std::endl;
-
                 return pass_head;
             }
 
             // Else, compute new password
             --index_hash_reduce;
             if (index_hash_reduce > 0) {
+                std::clock_t start_reverse_three = std::clock();
                 compute_pass = reverse(index_hash_reduce, hash_value, pass_size);
+                exec_reverse += (std::clock() - start_reverse_three) / (double)(CLOCKS_PER_SEC / 1000);
+                ++nbr_execution_reverse;
                 for (int i = index_hash_reduce+1; i <= nbr_loop; ++i) {
+                    std::clock_t start_reverse_four = std::clock();
                     compute_pass = reverse(i, sha256(compute_pass), pass_size);
+                    exec_reverse += (std::clock() - start_reverse_four) / (double)(CLOCKS_PER_SEC / 1000);
+                    ++nbr_execution_reverse;
                 }
             }
         }
-        std::cout << "Not found" << std::endl;
-        auto finish_loop = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> elapsed_loop = finish_loop - start_loop;
-        std::cout << "Total time: " << elapsed_loop.count() << std::endl;
-        std::cout << "Reverse: " << time_reverse << std::endl;
-        std::cout << "Search: " << time_search << std::endl;
-        std::cout << std::endl;
-
         table_file.close();
     }
     return "";
@@ -490,16 +486,27 @@ int main(int argc, char *argv[]) {
                     "'" << search_table_name << "'" << std::endl;
             }
 
+            std::clock_t start_search = std::clock();
             while (std::getline(hash_file, hash_str)) {
                 if (debug_level > 0) {
                     std::cout << "Try to find hash: " << hash_str << std::endl;
                 }
+                std::clock_t time_search_in_table = std::clock();
                 result = search_in_table(std::string(search_table_name) + ".txt", hash_str);
+                display_timer("search one hash", time_search_in_table);
                 std::cout << "Result: " << result << std::endl;
                 output_file << result + "\n";
             }
+            display_timer("search all hash", start_search);
             hash_file.close();
             output_file.close();
+
+            std::cout << "Dichotomique Search: " << exec_dichotomique << " (= " << 
+                exec_dichotomique/nbr_execution_dichotomique << " per exec)" << std::endl;
+            
+            std::cout << "Reverse: " << exec_reverse << " (= " << 
+                exec_reverse/nbr_execution_reverse << " per exec)" << std::endl;
+            
         }
 
     }
