@@ -21,7 +21,7 @@ long long nbr_pass = DEFAULT_NBR_PASS;
 
 // Number of hash - reduce done before to have the tail
 // Warning: begin at 1 and end include "NBR_LOOP" (so [1, NBR_LOOP])
-const int DEFAULT_NBR_LOOP = 50000;
+const int DEFAULT_NBR_LOOP = 5000;
 int nbr_loop = DEFAULT_NBR_LOOP;
 
 // Display some debug message
@@ -169,8 +169,7 @@ int index_min_element(char*** first_passwords, std::size_t total_password) {
     return min_index;
 }
 
-void generate_table(std::string output_file) {
-
+void generate_table(std::string output_file, int nbr_loop) {
     int max_batch_elements = nbr_pass/10;
     if (debug_level > 0) {
         std::cout << "Max number of element in a batch: " << max_batch_elements << std::endl;
@@ -193,7 +192,7 @@ void generate_table(std::string output_file) {
 
             if (i == nbr_pass/2) {
                 std::cout << "Display hash and password to made some tests" << std::endl;
-                std::cout << "pass: " << computed_pass_tail << " -> hash:" << sha256(computed_pass_tail) << std::endl;
+                std::cout << j << ". pass: " << computed_pass_tail << " -> hash:" << sha256(computed_pass_tail) << std::endl;
             }
 
             computed_pass_tail = reverse(j, sha256(computed_pass_tail), pass_size);
@@ -425,7 +424,7 @@ int main(int argc, char *argv[]) {
         ///////////////////////////////
         // GENERATE RAINBOW TABLE
         if (generate_table_name != NULL) {
-            generate_table(generate_table_name);
+            generate_table(generate_table_name, nbr_loop);
         }
 
         ///////////////////////////////
