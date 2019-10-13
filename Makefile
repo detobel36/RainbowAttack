@@ -5,7 +5,7 @@ all:
 install:
 	@echo TODO !
 
-build: gen-passwd check-passwd
+build: gen-passwd check-passwd rainbow-table
 
 gen-passwd:
 	g++ -o gen-passwd -std=c++17 src/random.hpp src/sha256.cpp src/gen-passwd.cpp src/passwd-utils.hpp
@@ -14,7 +14,7 @@ check-passwd:
 	g++ -o check-passwd -std=c++17 src/random.hpp src/sha256.cpp src/check-passwd.cpp src/passwd-utils.hpp
 
 rainbow-table:
-	g++ -o rainbow-table -std=c++17 -Wall -Wextra src/random.hpp src/sha256.cpp src/rainbow-table.cpp src/passwd-utils.hpp
+	g++ -O3 -o rainbow-table -std=c++17 -Wall -Wextra src/random.hpp src/sha256.cpp src/rainbow-table.cpp src/passwd-utils.hpp
 
 test-pass: gen-passwd
 	@echo "Generate password and hash"
