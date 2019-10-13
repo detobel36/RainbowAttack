@@ -5,13 +5,13 @@ build: gen-passwd check-passwd rainbow-table
 
 # BUILD
 gen-passwd:
-	g++ -o -O3 gen-passwd -std=c++17 src/random.hpp src/sha256.cpp src/gen-passwd.cpp src/passwd-utils.hpp
+	g++ -O3 -o gen-passwd -std=c++17 src/random.hpp src/sha256.cpp src/gen-passwd.cpp src/passwd-utils.hpp
 
 check-passwd:
-	g++ -o -O3 check-passwd -std=c++17 src/random.hpp src/sha256.cpp src/check-passwd.cpp src/passwd-utils.hpp
+	g++ -O3 -o check-passwd -std=c++17 src/random.hpp src/sha256.cpp src/check-passwd.cpp src/passwd-utils.hpp
 
 rainbow-table:
-	g++ -o -O3 rainbow-table -std=c++17 -Wall -Wextra src/random.hpp src/sha256.cpp src/rainbow-table.cpp src/passwd-utils.hpp
+	g++ -O3 -o rainbow-table -std=c++17 -Wall -Wextra src/random.hpp src/sha256.cpp src/rainbow-table.cpp src/passwd-utils.hpp
 
 # SIMPLIFY COMMANDS
 create-passwd: gen-passwd
