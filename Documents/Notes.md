@@ -19,6 +19,9 @@
 - Supprimer les mots de passe "en double".
 - Multi-thread la recherche (qui utilise la rainbowtable)
 
+## Multi-threading
+La génération de la rainbow-table est faite de manière parallèle. Le nombre de threads utilisé peut être spécifié en ligne de commande. Sa valeur par défaut est de 4. Note: L'implémentation sous-jacente utilise malloc et le paramètre en question influence dirrectement la mémoire allouée aux différents threads.
+
 ## Fonctionnement de la recherche
 
 Imaginons un cas avec 3 "colonnes".        
