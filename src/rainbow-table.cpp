@@ -190,7 +190,7 @@ void generate_table(std::string output_file, int nbr_loop) {
         std::string computed_pass_tail = generate_password;
         for (int j = 1; j <= nbr_loop; ++j) {
 
-            if (i == nbr_pass/2) {
+            if (debug_level > 1 and i == nbr_pass/2) {
                 std::cout << "Display hash and password to made some tests" << std::endl;
                 std::cout << j << ". pass: " << computed_pass_tail << " -> hash:" << sha256(computed_pass_tail) << std::endl;
             }
